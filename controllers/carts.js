@@ -21,7 +21,7 @@ exports.addToCart = async (req,res,next) => {
 
     const addedProduct =  {
         buyerId : req.user.uid,
-        productId : req.params.productId,
+        productId : req.body.productId,
         quantity : req.body.quantity
     };
 
@@ -46,7 +46,7 @@ exports.editCart = async (req,res,next) => {
 
     const editProduct =  {
         buyerId : req.user.uid,
-        productId : req.params.productId,
+        productId : req.body.productId,
         quantity : req.body.quantity
     };
 

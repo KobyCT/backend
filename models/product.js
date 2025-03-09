@@ -2,6 +2,7 @@ const sql = require('../config/pgdb');
 
 const Product = function(product){
     this.id = product.id;
+    this.sellerId = product.sellerId;
     this.name = product.name;
     this.description = product.description;
     this.price = product.price;
@@ -96,39 +97,13 @@ Product.query = (query,result) => {
     });
 };
 
-Product.getAll = (result) => {
-    sql.query('SELECT * FROM products;',(err,res)=>{
-        if(err){
-            console.log('error: ', err);
-            result(err,null);
-            return;
-        }
-        console.log('All products');
-        console.log(res.rows);
-        result(null, res.rows);
-    });
-};
-
-Product.getByType = (type,result) => {
-    sql.query(`SELECT * FROM products WHERE id IN (SELECT productid FROM type WHERE type = '${type}');`,(err,res)=>{
-        if(err){
-            console.log('error: ', err);
-            result(err,null);
-            return;
-        }
-        console.log(`All products with ${type}`);
-        console.log(res.rows);
-        result(null, res.rows);
-    });
-};
-
 
 Product.create = (newProduct, result) => {
-    const {name,description,price,quantity} = newProduct;
+    const {name,sellerId,description,price,quantity} = newProduct;
     
     const query = `
-    INSERT INTO products (name,description,price,quantity)
-    VALUES ('${name}','${description}','${price}','${quantity}')
+    INSERT INTO products (name,sellerId,description,price,quantity)
+    VALUES ('${name}','${sellerId}','${description}','${price}','${quantity}')
     RETURNING *;
     `;
 

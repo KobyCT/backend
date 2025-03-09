@@ -16,12 +16,6 @@ const User = function(user){
    this.role = user.role;
 };
 
-const Sell = function(sell){
-    this.sellerid = sell.sellerid;
-    this.productid = sell.productid;
- };
-
-
 User.findById = (id,result) =>{
     console.log(id);
     const query = `

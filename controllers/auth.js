@@ -24,70 +24,6 @@ const sendTokenResponse=(userId,statusCode,res,data)=>{
 
 };
 
-const register=async (req,res,next)=>{
-    if(!req.body) {
-        res.status(400).json({success: false, msg: 'Cannot be empty!'});
-    }
-    var role = req.body.role;
-    if(!req.body.role){
-        role = 'user';
-    }
-    const user = new User({
-        uid: req.body.userId,
-        firstNameTH: req.body.firstNameTH,
-        firstNameEN: req.body.firstNameEN,
-        lastNameTH: req.body.lastNameTH,
-        lastNameEN: req.body.lastNameEN,
-        facultyId: req.body.facultyCode,
-        facultyNameTH: req.body.facultyNameTH,
-        facultyNameEN: req.body.facultyNameEN,
-        studentYear: req.body.studentYear,
-        studentId: req.body.studentId,
-        role: role
-    });
-    
-    User.create(user, (err, data)=>{
-        if(err)
-            res.status(500).send({message: err.message || 'Some error occurred while register User'});
-        sendTokenResponse(req.body.userId,200,res,data);
-    });
-};
-
-exports.login=async (req,res,next)=>{
-    try{
-        const {userId}=req.body;
-    
-        //Validate userId
-        if(!userId){
-            return res.status(400).json({success:false,
-                msg:'Not found userId'});
-        }
-        console.log('found userId',userId);
-    
-        //Check for user
-        const user = await User.findById(userId,(err,data)=>{
-            if(err) {
-                if(err.kind === 'not_found') {
-                    console.log('before register');
-                    register(req,res);
-                    return;
-                } else {
-                    res.status(500).send({
-                        message: 'Error login with id ' + userId,
-                    });
-                }
-            } else {
-                console.log('before sendToken');
-                sendTokenResponse(req.body.userId,200,res,data);
-            }
-        });
-
-    }catch(err){
-        console.log(err);
-        return res.status(401).json({success:false, msg:'Cannot convert userId to string' })
-    }
-};
-
 exports.getUsers = async (req,res,next) => {
     User.getAll((err, data) => {
         if(err)
@@ -107,24 +43,29 @@ exports.getCallback = async (req, res) => {
     if (!token) {
         return res.status(400).json({ error: "Missing token" });
     }
-    console.log('found token');
+    console.log('found token',token);
 
     try {
         // เรียก API ของ CUNEX เพื่อตรวจสอบ Token
         userData = await axios.get(`${process.env.GATEWAY}/profile`, {
             headers: {
                 "Content-Type": "application/json",
-                "ClientId": process.env.CLIENT_ID,       // นำ ClientId จาก .env
-                "ClientSecret": process.env.CLIENT_SECRET // นำ ClientSecret จาก .env
+                "ClientId": process.env.CLIENT_ID,       
+                "ClientSecret": process.env.CLIENT_SECRET 
             },
             params: { token } 
         });
+        
+        console.log("Full API Response:", userData);
+        console.log("Received Data from API:", userData.data);
+
 
 
     } catch (error) {
         console.error("Error:", error.response ? error.response.data : error.message);
         res.status(500).json({ error: "Invalid token or API error" });
     }
+
 
     console.log(userData.data);
 

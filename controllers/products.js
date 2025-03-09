@@ -43,7 +43,47 @@ exports.deleteType = (req,res) => {
 };
 
 
-exports.getRecommentProducts = async (req,res,next) => {
+
+exports.getProducts = async (req, res, next) => {
+    const { select, sort ,type} = req.query;
+    
+    const columns = select ? select.split(',').map(col => `"${col.trim()}"`).join(', ') : '*';
+    
+    let orderBy = 'createTime DESC';
+    if (sort) {
+        const [col, order] = sort.split(':');
+        const validOrder = order && order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+        orderBy = `"${col.trim()}" ${validOrder}`;
+    }
+    
+    let query;
+    if(type){
+        query = `SELECT ${columns} FROM products WHERE id IN (SELECT productid FROM type WHERE type = '${type}') ORDER BY ${orderBy};`;
+    }else{
+        query = `SELECT ${columns} FROM products ORDER BY ${orderBy};`;
+    }
+    
+    Product.query(query, (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            res.status(200).json(data);
+        }
+    });
+};
+
+exports.getMyProducts = async (req, res, next) => {
+    const query = `SELECT * FROM products WHERE sellerId = ${req.user.uid}`;
+    Product.query(query, (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            res.status(200).json(data);
+        }
+    });
+};
+
+exports.getRecommendProducts = async (req,res,next) => {
     Product.getSameProductType(req.params.id,(err, data)=>{
         if(err)
             res.status(500).send({message: err.message || 'Some error occurred while retrieving Recommend Products'});
@@ -51,25 +91,13 @@ exports.getRecommentProducts = async (req,res,next) => {
     });
 };
 
-exports.getProducts = async (req, res, next) => {
-    const { select, sort ,type} = req.query;
-
-    const columns = select ? select.split(',').map(col => `"${col.trim()}"`).join(', ') : '*';
-
-    let orderBy = 'createTime DESC';
-    if (sort) {
-        const [col, order] = sort.split(':');
-        const validOrder = order && order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-        orderBy = `"${col.trim()}" ${validOrder}`;
-    }
-
-    let query;
-    if(type){
-        query = `SELECT ${columns} FROM products WHERE id IN (SELECT productid FROM type WHERE type = '${type}') ORDER BY ${orderBy};`;
-    }else{
-        query = `SELECT ${columns} FROM products ORDER BY ${orderBy};`;
-    }
-
+exports.search = async (req, res, next) => {
+    const search = req.query.q;
+    
+    console.log(req.query.q);
+    const query = `SELECT * FROM products WHERE name ILIKE '%${search}%'`;
+    
+    console.log(query);
     Product.query(query, (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
@@ -80,24 +108,31 @@ exports.getProducts = async (req, res, next) => {
 };
 
 
-exports.createProduct = async (req,res,next) => {
-    if(!req.body) {
-        res.status(400).json({success: false, msg: 'Content Cannot be empty!'});
+exports.createProduct = async (req, res, next) => {
+    if (!req.body) {
+        return res.status(400).json({ success: false, msg: 'Content Cannot be empty!' });
     }
 
-        const product = new Product({
-            name: req.body.name,
-            description: req.body.description,
-            price: req.body.price,
-            quantity: req.body.quantity,
-        });
+    let seller = req.user.uid; 
+    if (req.user.role === 'admin' && req.body.sellerId) {
+        seller = req.body.sellerId; 
+    }
 
-        Product.create(product, (err, data)=>{
-            if(err)
-                res.status(500).send({message: err.message || 'Some error occurred while create Product'});
-            else res.status(201).json(data);
-        });
+    const product = new Product({
+        name: req.body.name,
+        sellerId: seller,
+        description: req.body.description,
+        price: req.body.price,
+        quantity: req.body.quantity,
+    });
+
+    Product.create(product, (err, data) => {
+        if (err)
+            return res.status(500).send({ message: err.message || 'Some error occurred while creating Product' });
+        res.status(201).json(data);
+    });
 };
+
 
 exports.updateProduct = (req, res) => {
     //Validate Request

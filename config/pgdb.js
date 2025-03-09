@@ -14,11 +14,13 @@ async function createProductsTable() {
         const query = `
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
+            sellerId VARCHAR(255) NOT NULL,
             name VARCHAR(255) NOT NULL,
             description VARCHAR(255),
             price NUMERIC(10,2),
             quantity NUMERIC,
-            createTime TIMESTAMP DEFAULT now()
+            createTime TIMESTAMP DEFAULT now(),
+            FOREIGN KEY (sellerId) REFERENCES users(uid)
         );
         `;
 
@@ -58,26 +60,6 @@ async function createUsersTable() {
 }
 createUsersTable();
 
-async function createSellTable() {
-    try {
-        const query = `
-        CREATE TABLE IF NOT EXISTS sell (
-            sellerId VARCHAR(255),
-            productId SERIAL,
-            FOREIGN KEY (sellerId) REFERENCES users(uid),
-            FOREIGN KEY (productId) REFERENCES products(id),
-            PRIMARY KEY (sellerId,productId)
-        );
-        `;
-
-        await connection.query(query);
-        console.log('Sell table created');
-    }catch(err){
-        console.error(err);
-        console.error('Sell table creation failed');
-    }  
-}
-createSellTable() ;
 
 async function createCartTable() {
     try {
