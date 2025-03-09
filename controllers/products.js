@@ -1,16 +1,88 @@
-const Product = require('../models/product');
+const {Product,Type} = require('../models/product');
 
-exports.getProducts = async (req,res,next) => {
-    Product.getAll((err, data)=>{
+exports.getAllType = async (req,res,next) => {
+    Type.getAllType((err, data)=>{
         if(err)
-            res.status(500).send({message: err.message || 'Some error occurred while retrieving All Products'});
+            res.status(500).send({message: err.message || 'Some error occurred while retrieving All Type'});
         else res.status(200).json(data);
     });
 };
 
+exports.AddType = async (req,res,next) => {
+    if(!req.body) {
+        res.status(400).json({success: false, msg: 'Content cannot be empty!'});
+    }
+
+        const type = new Type({
+            productid : req.body.productid,
+            type : req.body.type,
+        });
+
+        Type.AddType(type, (err, data)=>{
+            if(err)
+                res.status(500).send({message: err.message || 'Some error occurred while add type'});
+            else res.status(201).json(data);
+        });
+};
+
+exports.deleteType = (req,res) => {
+    if(!req.body) {
+        res.status(400).json({success: false, msg: 'Content cannot be empty!'});
+    }
+
+        const type = new Type({
+            productid : req.body.productid,
+            type : req.body.type,
+        });
+
+        Type.RemoveType(type, (err, data)=>{
+            if(err)
+                res.status(500).send({message: err.message || 'Some error occurred while delete type'});
+            else res.status(201).json(data);
+        });
+};
+
+
+exports.getRecommentProducts = async (req,res,next) => {
+    Product.getSameProductType(req.params.id,(err, data)=>{
+        if(err)
+            res.status(500).send({message: err.message || 'Some error occurred while retrieving Recommend Products'});
+        else res.status(200).json(data);
+    });
+};
+
+exports.getProducts = async (req, res, next) => {
+    const { select, sort ,type} = req.query;
+
+    const columns = select ? select.split(',').map(col => `"${col.trim()}"`).join(', ') : '*';
+
+    let orderBy = 'createTime DESC';
+    if (sort) {
+        const [col, order] = sort.split(':');
+        const validOrder = order && order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+        orderBy = `"${col.trim()}" ${validOrder}`;
+    }
+
+    let query;
+    if(type){
+        query = `SELECT ${columns} FROM products WHERE id IN (SELECT productid FROM type WHERE type = '${type}') ORDER BY ${orderBy};`;
+    }else{
+        query = `SELECT ${columns} FROM products ORDER BY ${orderBy};`;
+    }
+
+    Product.query(query, (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            res.status(200).json(data);
+        }
+    });
+};
+
+
 exports.createProduct = async (req,res,next) => {
     if(!req.body) {
-        res.status(400).json({success: false, msg: 'Cannot be empty!'});
+        res.status(400).json({success: false, msg: 'Content Cannot be empty!'});
     }
 
         const product = new Product({

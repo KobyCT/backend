@@ -8,6 +8,94 @@ const Product = function(product){
     this.quantity = product.quantity;
 };
 
+const Type = function(type){
+    this.productid = type.productid;
+    this.type = type.type;
+};
+
+Type.getAllType = (result) => {
+    sql.query('SELECT * FROM type;',(err,res)=>{
+        if(err){
+            console.log('error: ', err);
+            result(err,null);
+            return;
+        }
+        console.log('All type');
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
+Type.getThisProductType = (id,result) => {
+    sql.query(`SELECT DISTINCT type FROM type WHERE productid = ${id};`,(err,res)=>{
+        if(err){
+            console.log('error: ', err);
+            result(err,null);
+            return;
+        }
+        console.log('All type');
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
+Type.AddType = (newType,result) => {
+    const {productid,type} = newType;
+    
+    const query = `
+    INSERT INTO type (productid,type)
+    VALUES ('${productid}','${type}')
+    RETURNING *;
+    `;
+
+    sql.query(query, (err, res)=>{
+        if(err) {
+            console.log('create error: ',err);
+            result(err,null);
+            return;
+        }
+        console.log('Add type:')
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
+Type.RemoveType = (deletedType,result) => {
+    const {productid,type} = deletedType;
+    
+    const query = `
+    DELETE FROM type WHERE productid = ${productid} AND type = '${type}' RETURNING *;
+    `;
+
+    sql.query(query, (err, res)=>{
+        if(err){
+            console.log('error: ',err);
+            result(null, err);
+            return;
+        }
+        if(res.affectedRows == 0){
+            result({kind:'not_found'},null);
+            return;
+        }
+
+        console.log(`delete ${type} type in productid: `, productid);
+        result(null, res.rows);
+    });
+};
+
+Product.query = (query,result) => {
+    sql.query(query,(err,res)=>{
+        if(err){
+            console.log('error: ', err);
+            result(err,null);
+            return;
+        }
+        console.log('All products');
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
 Product.getAll = (result) => {
     sql.query('SELECT * FROM products;',(err,res)=>{
         if(err){
@@ -20,6 +108,20 @@ Product.getAll = (result) => {
         result(null, res.rows);
     });
 };
+
+Product.getByType = (type,result) => {
+    sql.query(`SELECT * FROM products WHERE id IN (SELECT productid FROM type WHERE type = '${type}');`,(err,res)=>{
+        if(err){
+            console.log('error: ', err);
+            result(err,null);
+            return;
+        }
+        console.log(`All products with ${type}`);
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
 
 Product.create = (newProduct, result) => {
     const {name,description,price,quantity} = newProduct;
@@ -66,7 +168,9 @@ Product.updateById = (id, product, result) => {
 };
 
 Product.remove = (id,result) => {
-    const query = `DELETE FROM products WHERE id = ${id} RETURNING *;`;
+    const query = `
+    DELETE FROM type WHERE productid = ${id};
+    DELETE FROM products WHERE id = ${id} RETURNING *;`;
 
     sql.query(query, (err, res)=>{
         if(err){
@@ -84,4 +188,20 @@ Product.remove = (id,result) => {
     });
 };
 
-module.exports = Product;
+Product.getSameProductType = (id,result)=>{
+    const query = `SELECT DISTINCT * FROM products WHERE id != ${id} AND id IN (
+SELECT DISTINCT productid FROM type WHERE type IN (
+SELECT type FROM type WHERE productid = ${id} GROUP BY type)) ORDER BY createtime DESC LIMIT 5`
+    sql.query(query, (err, res)=>{
+        if(err){
+            console.log('error: ', err);
+            result(err,null);
+            return;
+        }
+        console.log('Product with same type');
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
+module.exports = {Product,Type};

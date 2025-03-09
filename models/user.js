@@ -1,5 +1,7 @@
 const sql = require('../config/pgdb');
 
+const Product = require('./product');
+
 const User = function(user){
    this.uid = user.uid;
    this.firstNameTH = user.firstNameTH;
@@ -13,6 +15,11 @@ const User = function(user){
    this.studentId = user.studentId;
    this.role = user.role;
 };
+
+const Sell = function(sell){
+    this.sellerid = sell.sellerid;
+    this.productid = sell.productid;
+ };
 
 
 User.findById = (id,result) =>{

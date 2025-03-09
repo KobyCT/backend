@@ -9,10 +9,6 @@ var connection= new Pool({
     port: 5432,
 });
 
-async function deleteAllTable() {
-    
-}
-
 async function createProductsTable() {
     try {
         const query = `
@@ -21,7 +17,8 @@ async function createProductsTable() {
             name VARCHAR(255) NOT NULL,
             description VARCHAR(255),
             price NUMERIC(10,2),
-            quantity NUMERIC
+            quantity NUMERIC,
+            createTime TIMESTAMP DEFAULT now()
         );
         `;
 
@@ -68,7 +65,8 @@ async function createSellTable() {
             sellerId VARCHAR(255),
             productId SERIAL,
             FOREIGN KEY (sellerId) REFERENCES users(uid),
-            FOREIGN KEY (productId) REFERENCES products(id)
+            FOREIGN KEY (productId) REFERENCES products(id),
+            PRIMARY KEY (sellerId,productId)
         );
         `;
 
@@ -90,8 +88,8 @@ async function createCartTable() {
             quantity NUMERIC,
             addtime TIMESTAMP DEFAULT now(),
             FOREIGN KEY (buyerId) REFERENCES users(uid),
-            FOREIGN KEY (productId) REFERENCES products(id)
-            
+            FOREIGN KEY (productId) REFERENCES products(id),
+            PRIMARY KEY (buyerId,productId)
         );
         `;
 
@@ -110,7 +108,8 @@ async function createTypeTable() {
         CREATE TABLE IF NOT EXISTS type(
             productId SERIAL,
             type VARCHAR(255),
-            FOREIGN KEY (productId) REFERENCES products(id)
+            FOREIGN KEY (productId) REFERENCES products(id),
+			PRIMARY KEY (productId,type)
         );
         `;
 
