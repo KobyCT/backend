@@ -58,9 +58,9 @@ exports.getProducts = async (req, res, next) => {
     
     let query;
     if(type){
-        query = `SELECT ${columns} FROM products WHERE id IN (SELECT productid FROM type WHERE type = '${type}') ORDER BY ${orderBy};`;
+        query = `SELECT ${columns} FROM products WHERE isApprove = true AND id IN (SELECT productid FROM type WHERE type = '${type}') ORDER BY ${orderBy};`;
     }else{
-        query = `SELECT ${columns} FROM products ORDER BY ${orderBy};`;
+        query = `SELECT ${columns} FROM products WHERE isApprove = true ORDER BY ${orderBy};`;
     }
     
     Product.query(query, (err, data) => {
@@ -71,6 +71,47 @@ exports.getProducts = async (req, res, next) => {
         }
     });
 };
+
+exports.getUnApproveProducts = async (req, res, next) => {
+    const query = `SELECT * FROM products WHERE isApprove = false`;
+    
+    Product.query(query, (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            res.status(200).json(data);
+        }
+    });
+};
+
+exports.approveProducts = async (req, res, next) => {
+    const productId = req.params.id;
+
+    const query = `UPDATE products SET isApprove= true WHERE id = ${productId}`;
+    
+    Product.query(query, (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            res.status(200).json(data);
+        }
+    });
+};
+
+exports.unApproveProducts = async (req, res, next) => {
+    const productId = req.params.id;
+
+    const query = `UPDATE products SET isApprove= false WHERE id = ${productId}`;
+    
+    Product.query(query, (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            res.status(200).json(data);
+        }
+    });
+};
+
 
 exports.getMyProducts = async (req, res, next) => {
     const query = `SELECT * FROM products WHERE sellerId = ${req.user.uid}`;
@@ -120,11 +161,20 @@ exports.createProduct = async (req, res, next) => {
 
     const product = new Product({
         name: req.body.name,
-        sellerId: seller,
-        description: req.body.description,
-        price: req.body.price,
-        quantity: req.body.quantity,
+        sellerId:seller,
+        description: req.body.description.replace(/'/g, "''"), 
+        price: parseFloat(req.body.price) || 0, 
+        oldPrice: parseFloat(req.body.oldPrice) || 0,
+        quantity: parseInt(req.body.quantity, 10) || 0,
+        shippingType: req.body.shippingType.trim(),
+        shippingCost: parseFloat(req.body.shippingCost) || 0,
+        approveDescription: req.body.approveDescription.replace(/'/g, "''"), 
+        isApprove: false,
+        imageURL: req.body.imageURL
     });
+    
+
+    console.log(product);
 
     Product.create(product, (err, data) => {
         if (err)

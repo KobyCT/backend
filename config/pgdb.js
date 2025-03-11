@@ -18,11 +18,17 @@ async function createProductsTable() {
             name VARCHAR(255) NOT NULL,
             description VARCHAR(255),
             price NUMERIC(10,2),
+            oldPrice NUMERIC(10,2),
             quantity NUMERIC,
+            shippingType VARCHAR(255),
+            shippingCost NUMERIC(10,2),
+            approveDescription VARCHAR(255),
+            isApprove boolean,
+            imageUrl VARCHAR(255),
             createTime TIMESTAMP DEFAULT now(),
             FOREIGN KEY (sellerId) REFERENCES users(uid)
         );
-        `;
+        `; 
 
         await connection.query(query);
         console.log('Products table created');
@@ -37,7 +43,7 @@ async function createUsersTable() {
     try {
         const query = `
         CREATE TABLE IF NOT EXISTS users (
-            uid VARCHAR(255) UNIQUE PRIMARY KEY ,
+            uid VARCHAR(255) UNIQUE PRIMARY KEY,
             firstNameTH VARCHAR(255) NOT NULL,
             firstNameEN VARCHAR(255) NOT NULL,
             lastNameTH VARCHAR(255) NOT NULL,
@@ -84,26 +90,111 @@ async function createCartTable() {
 }
 createCartTable();
 
-async function createTypeTable() {
+async function createTagTable() {
     try {
         const query = `
-        CREATE TABLE IF NOT EXISTS type(
+        CREATE TABLE IF NOT EXISTS tags(
             productId SERIAL,
-            type VARCHAR(255),
+            tag VARCHAR(255),
             FOREIGN KEY (productId) REFERENCES products(id),
-			PRIMARY KEY (productId,type)
+			PRIMARY KEY (productId,tag)
         );
         `;
 
         await connection.query(query);
-        console.log('Type table created');
+        console.log('Tag table created');
     }catch(err){
         console.error(err);
-        console.error('Type table creation failed');
+        console.error('Tag table creation failed');
     }  
 }
-createTypeTable();
+createTagTable();
 
+async function createChatTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS chats(
+            chatId SERIAL,
+            members VARCHAR[2] NOT NULL,
+            productId SERIAL,
+            quantity NUMERIC,
+            craeteTime TIMESTAMP DEFAULT now(),
+            FOREIGN KEY (productId) REFERENCES products(id),
+            PRIMARY KEY(chatId,productId)
+        );
+        `;
 
+        await connection.query(query);
+        console.log('Chat table created');
+    }catch(err){
+        console.error(err);
+        console.error('Chat table creation failed');
+    }  
+}
+createChatTable();
+
+async function createMessageTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS messages(
+            chatId SERIAL,
+            senderId VARCHAR(255),
+            text VARCHAR(255),
+            sendTime TIMESTAMP DEFAULT now()
+        );
+        `;
+
+        await connection.query(query);
+        console.log('Message table created');
+    }catch(err){
+        console.error(err);
+        console.error('Message table creation failed');
+    }  
+}
+createMessageTable();
+
+async function createBlacklistTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS blacklist(
+            bannerId VARCHAR(255),
+            bannedId VARCHAR(255),
+            banTime TIMESTAMP DEFAULT now()
+        );
+        `;
+
+        await connection.query(query);
+        console.log('Blacklist table created');
+    }catch(err){
+        console.error(err);
+        console.error('Blacklist table creation failed');
+    }  
+}
+createBlacklistTable();
+
+async function createReviewTable() {
+    try {
+        const query = `
+        DROP TABLE reviews;
+        CREATE TABLE IF NOT EXISTS reviews(
+            reviewId SERIAL,  
+            sellerId VARCHAR(255),
+            reviewerId VARCHAR(255),
+            score NUMERIC,
+            comment VARCHAR(255),
+            FOREIGN KEY (sellerId) REFERENCES users(uid),
+            FOREIGN KEY (reviewerId) REFERENCES users(uid),
+            reviewTime TIMESTAMP DEFAULT now()
+        );
+        `;
+
+        await connection.query(query);
+        console.log('Review table created');
+    }catch(err){
+        console.error(err);
+        console.error('Review table creation failed');
+    }  
+}
+createReviewTable();
 
 module.exports = connection;

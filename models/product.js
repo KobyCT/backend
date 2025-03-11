@@ -6,7 +6,13 @@ const Product = function(product){
     this.name = product.name;
     this.description = product.description;
     this.price = product.price;
+    this.oldPrice = product.oldPrice;
     this.quantity = product.quantity;
+    this.shippingType = product.shippingType;
+    this.shippingCost = product.shippingCost;
+    this.approveDescription = product.approveDescription;
+    this.isApprove = product.isApprove;
+    this.imageURL = product.imageURL;
 };
 
 const Type = function(type){
@@ -99,11 +105,11 @@ Product.query = (query,result) => {
 
 
 Product.create = (newProduct, result) => {
-    const {name,sellerId,description,price,quantity} = newProduct;
+    const {name,sellerId,description,price,oldPrice,quantity,shippingType,shippingCost,approveDescription,isApprove,imageURL} = newProduct;
     
     const query = `
-    INSERT INTO products (name,sellerId,description,price,quantity)
-    VALUES ('${name}','${sellerId}','${description}','${price}','${quantity}')
+    INSERT INTO products (name,sellerId,description,price,oldPrice,quantity,shippingType,shippingCost,approveDescription,isApprove,imageURL)
+    VALUES ('${name}','${sellerId}','${description}','${price}','${oldPrice}','${quantity}','${shippingType}','${shippingCost}','${approveDescription}','${isApprove}','${imageURL}')
     RETURNING *;
     `;
 

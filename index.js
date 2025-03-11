@@ -19,6 +19,12 @@ app.use('/api/auth', auth);
 const carts = require('./routes/carts');
 app.use('/api/cart', carts);
 
+const chats = require('./routes/chats');
+app.use('/api/chats', chats);
+
+const blacklist = require('./routes/blacklists');
+app.use('/api/blacklist', blacklist);
+
 const PORT = process.env.PORT || 5000;
 const server = app.listen(
     PORT,
@@ -29,6 +35,7 @@ const server = app.listen(
         PORT
     )
 );
+
 process.on('unhandledRejection',(err,promise)=>{
     console.log(`Error:${err.message}`);
     server.close(()=> process.exit(1));

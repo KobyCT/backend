@@ -1,42 +1,57 @@
 const jwt=require('jsonwebtoken');
 const User=require('../models/user');
+const Blacklist=require('../models/blacklist');
 
 //Protect routes
-exports.protect=async(req,res,next)=>{
+exports.protect = async (req, res, next) => {
     let token;
 
-    if(req.headers.authorization && req.headers.authorization.startsWith('Bearer')){
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
     }
 
-    //Make sure token exists
-    if(!token || token=='null'){
-        return res.status(401).json({success:false, message:'Not authorize to access this route'});
+    // Make sure token exists
+    if (!token || token === 'null') {
+        return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
     }
 
-    try{
-        //Verify token
-        const decoded = jwt.verify(token,process.env.JWT_SECRET);
+    try {
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        console.log(decoded);
-
-        await User.findById(decoded.uid,(err,data)=>{
-            if(err){
-                res.status(400).json({success:false,massage: err});
-            }else{
-                console.log('get data');
-                req.user = data;
-                console.log(req.user);
-                next();
-            }
+        // Check if user is banned
+        const isBanned = await new Promise((resolve, reject) => {
+            Blacklist.areBanned(decoded.uid, (err, data) => {
+                if (err) return reject(err);
+                resolve(data);
+            });
         });
 
-    }catch(err){
-        console.log(err.stack);
-        return res.status(401).json({success:false, message:'Not authorize to access this route'});
-    }
+        if (isBanned) {
+            return res.status(403).json({ success: false, message: 'This user is banned!' });
+        }
 
+        // Find user by ID
+        const user = await new Promise((resolve, reject) => {
+            User.findById(decoded.uid, (err, data) => {
+                if (err) return reject(err);
+                resolve(data);
+            });
+        });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        req.user = user;
+        next();
+        
+    } catch (err) {
+        console.error(err.stack);
+        return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
+    }
 };
+
 
 //Grant access to specific roles
 exports.authorize=(...roles)=>{
