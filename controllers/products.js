@@ -62,7 +62,7 @@ exports.getProducts = async (req, res, next) => {
     }else{
         query = `SELECT ${columns} FROM products WHERE isApprove = true ORDER BY ${orderBy};`;
     }
-    
+    console.log(query);
     Product.query(query, (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
@@ -159,6 +159,11 @@ exports.createProduct = async (req, res, next) => {
         seller = req.body.sellerId; 
     }
 
+    let open = false;
+    if(req.body.isOpen){
+        open = req.body.isOpen;
+    }
+
     const product = new Product({
         name: req.body.name,
         sellerId:seller,
@@ -170,6 +175,7 @@ exports.createProduct = async (req, res, next) => {
         shippingCost: parseFloat(req.body.shippingCost) || 0,
         approveDescription: req.body.approveDescription.replace(/'/g, "''"), 
         isApprove: false,
+        isOpen: open,
         imageURL: req.body.imageURL
     });
     
@@ -185,29 +191,34 @@ exports.createProduct = async (req, res, next) => {
 
 
 exports.updateProduct = (req, res) => {
-    //Validate Request
-    if(!req.body) {
-        res.status(400).send({
+    if (!req.body || Object.keys(req.body).length === 0) {
+        return res.status(400).send({
             message: 'Content can not be empty!',
         });
     }
 
+    
+    if(!req.body.sellerId || req.user.role === 'acceptuser') req.body.sellerId = req.user.uid;
+    
     console.log(req.body);
 
-    Product.updateById(req.params.id, new Product(req.body), (err, data) => {
-        if(err) {
-            if(err.kind === 'not_found') {
-                res.status(404).send({
+    Product.updateById(req.params.id, req.body, (err, data) => {
+        if (err) {
+            if (err.msg === 'not_found') { 
+                return res.status(404).send({
                     message: `Not found Product with id ${req.params.id}.`,
                 });
             } else {
-                res.status(500).send({
-                    message: 'Error updating Product with id' + req.params.id,
+                return res.status(500).send({
+                    message: `Error updating Product with id ${req.params.id}`,
+                    error: err,
                 });
             }
-        } else res.status(200).json(data);
+        } 
+        res.status(200).json(data);
     });
 };
+
 
 exports.deleteProduct = (req,res) => {
     Product.remove(req.params.id, (err,data)=>{

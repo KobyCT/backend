@@ -12,6 +12,7 @@ const Product = function(product){
     this.shippingCost = product.shippingCost;
     this.approveDescription = product.approveDescription;
     this.isApprove = product.isApprove;
+    this.isOpen = product.isOpen;
     this.imageURL = product.imageURL;
 };
 
@@ -51,11 +52,13 @@ Type.AddType = (newType,result) => {
     
     const query = `
     INSERT INTO type (productid,type)
-    VALUES ('${productid}','${type}')
+    VALUES ('$1','$2')
     RETURNING *;
     `;
 
-    sql.query(query, (err, res)=>{
+    const values = [productid,type];
+
+    sql.query(query, values, (err, res)=>{
         if(err) {
             console.log('create error: ',err);
             result(err,null);
@@ -105,52 +108,75 @@ Product.query = (query,result) => {
 
 
 Product.create = (newProduct, result) => {
-    const {name,sellerId,description,price,oldPrice,quantity,shippingType,shippingCost,approveDescription,isApprove,imageURL} = newProduct;
+    const {
+        name, sellerId, description, price, oldPrice, quantity,
+        shippingType, shippingCost, approveDescription, isApprove,
+        isOpen, imageURL
+    } = newProduct;
     
     const query = `
-    INSERT INTO products (name,sellerId,description,price,oldPrice,quantity,shippingType,shippingCost,approveDescription,isApprove,imageURL)
-    VALUES ('${name}','${sellerId}','${description}','${price}','${oldPrice}','${quantity}','${shippingType}','${shippingCost}','${approveDescription}','${isApprove}','${imageURL}')
+    INSERT INTO products (name, sellerId, description, price, oldPrice, quantity, 
+                          shippingType, shippingCost, approveDescription, isApprove, isOpen, imageURL)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     RETURNING *;
     `;
 
-    sql.query(query, (err, res)=>{
-        if(err) {
-            console.log('create error: ',err);
-            result(err,null);
+    const values = [
+        name, sellerId, description, price, oldPrice, quantity,
+        shippingType, shippingCost, approveDescription, isApprove,
+        isOpen, imageURL
+    ];
+
+    sql.query(query, values, (err, res) => {
+        if (err) {
+            console.log('create error:', err);
+            result(err, null);
             return;
         }
-        console.log('create product:')
-        console.log(res.rows);
+        console.log('create product:', res.rows);
         result(null, res.rows);
     });
 };
+
 
 Product.updateById = (id, product, result) => {
-    const query = `UPDATE products SET name = '${product.name}' , description = '${product.description}',
-    price = ${product.price}, quantity = ${product.quantity} WHERE id = ${id}
+    const query = `
+    UPDATE products 
+    SET name = $1, sellerId = $2, description = $3, price = $4, oldPrice = $5, quantity = $6,
+        shippingType = $7, shippingCost = $8, approveDescription = $9, isApprove = $10, 
+        isOpen = $11, imageURL = $12
+    WHERE id = $13
     RETURNING *;
     `;
 
-    sql.query(query, (err, res)=>{
-        if(err) {
-            console.log('error: ', err);
-            result(null,err);
+    const values = [
+        product.name, product.sellerId, product.description, product.price, product.oldPrice, 
+        product.quantity, product.shippingType, product.shippingCost, product.approveDescription, 
+        product.isApprove, product.isOpen, product.imageURL, id
+    ];
+
+    sql.query(query, values, (err, res) => {
+        if (err) {
+            console.log('error:', err);
+            result(err, null);
             return;
         }
 
-        if(res.affectedRows == 0){
-            result({msg:'not_found'}, null);
+        if (res.rowCount === 0) {
+            result({ msg: 'not_found' }, null);
             return;
         }
 
-        console.log('update product: ',res.rows);
+        console.log('update product:', res.rows);
         result(null, res.rows);
     });
 };
+
 
 Product.remove = (id,result) => {
     const query = `
     DELETE FROM type WHERE productid = ${id};
+    DELETE FROM cart WHERE productid = ${id};
     DELETE FROM products WHERE id = ${id} RETURNING *;`;
 
     sql.query(query, (err, res)=>{

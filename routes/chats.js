@@ -6,7 +6,7 @@ const {protect,authorize} = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.route('/newchat').post(protect,createChat);
-router.route('/').get(protect,getChats);
+router.route('/newchat').post(protect,authorize('admin','acceptuser'),createChat);
+router.route('/').get(protect,authorize('admin','acceptuser'),getChats);
 
 module.exports = router;

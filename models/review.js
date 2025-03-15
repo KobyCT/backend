@@ -20,54 +20,73 @@ Review.query = (query,result) => {
     });
 };
 
-Review.addReview = (newReview,result)=>{
-    const {sellerId,reviewerId,score,comment} = newReview;
+Review.addReview = (newReview, result) => {
+    const { sellerId, reviewerId, score, comment } = newReview;
     
     const query = `
-    INSERT INTO reviews (sellerId,reviewerId,score,comment)
-    VALUES ('${sellerId}','${reviewerId}','${score}','${comment}'')
+    INSERT INTO reviews (sellerId, reviewerId, score, comment)
+    VALUES ($1, $2, $3, $4)
     RETURNING *;
     `;
 
-    sql.query(query, (err, res)=>{
-        if(err) {
-            console.log('create error: ',err);
-            result(err,null);
+    const values = [sellerId, reviewerId, score, comment];
+
+    sql.query(query, values, (err, res) => {
+        if (err) {
+            console.log('create error:', err);
+            result(err, null);
             return;
         }
-        console.log('create review:')
-        console.log(res.rows);
+        console.log('create review:', res.rows);
         result(null, res.rows);
     });
 };
 
-Review.updateReview = (reviewId,editReview,result)=>{
-    const {score,comment} = editReview;
+
+Review.updateReview = (reviewId, editReview, result) => {
+    const { score, comment } = editReview;
 
     const query = `
     UPDATE reviews 
-    SET score = '${score}' ,comment ='${comment}'
-    WHERE sellerId = '${reviewId}'
+    SET score = $1, comment = $2
+    WHERE reviewId = $3
     RETURNING *;
     `;
 
-    sql.query(query, (err, res)=>{
-        if(err) {
-            console.log('create error: ',err);
-            result(err,null);
-            return;
-        }
-        console.log('create review:')
-        console.log(res.rows);
-        result(null, res.rows);
-    });
+    const values = [score, comment, reviewId];
+
+    try{
+        sql.query(query, values, (err, res) => {
+            if (err) {
+                console.log('update error:', err);
+                result(err, null);
+                return;
+            }
+    
+            if (res.rowCount === 0) {
+                result({ message: "No review found" }, null);
+                return;
+            }
+    
+            console.log('update review:', res.rows);
+            result(null, res.rows);
+        });
+
+    }catch(error){
+        result(error, null);
+                return;
+    }
+
 };
+
 
 Review.removeReview = (reviewId,result)=>{
     const query = `
-    DELETE FROM reviews WHERE id = ${reviewId} RETURNING *;`;
+    DELETE FROM reviews WHERE reviewId = $1 RETURNING *;`;
 
-    sql.query(query, (err, res)=>{
+    const value = [reviewId];
+
+    sql.query(query,value, (err, res)=>{
         if(err){
             console.log('error: ',err);
             result(null, err);

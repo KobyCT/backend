@@ -25,6 +25,13 @@ app.use('/api/chats', chats);
 const blacklist = require('./routes/blacklists');
 app.use('/api/blacklist', blacklist);
 
+const reviews = require('./routes/reviews');
+app.use('/api/review', reviews);
+
+const history = require('./routes/history');
+app.use('/api/history', history);
+
+
 const PORT = process.env.PORT || 5000;
 const server = app.listen(
     PORT,

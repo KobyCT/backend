@@ -24,6 +24,7 @@ async function createProductsTable() {
             shippingCost NUMERIC(10,2),
             approveDescription VARCHAR(255),
             isApprove boolean,
+            isOpen boolean,
             imageUrl VARCHAR(255),
             createTime TIMESTAMP DEFAULT now(),
             FOREIGN KEY (sellerId) REFERENCES users(uid)
@@ -53,7 +54,7 @@ async function createUsersTable() {
             facultyNameEN VARCHAR(255),
             studentYear VARCHAR(255),
             studentId VARCHAR(255),
-            role VARCHAR(255) DEFAULT 'user'
+            role VARCHAR(255) DEFAULT 'unacceptuser'
         );
         `;
 
@@ -175,7 +176,6 @@ createBlacklistTable();
 async function createReviewTable() {
     try {
         const query = `
-        DROP TABLE reviews;
         CREATE TABLE IF NOT EXISTS reviews(
             reviewId SERIAL,  
             sellerId VARCHAR(255),
@@ -196,5 +196,30 @@ async function createReviewTable() {
     }  
 }
 createReviewTable();
+
+async function createHistoryTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS history(
+            historyId SERIAL PRIMARY KEY,
+            buyerId VARCHAR(255),
+            productId SERIAL,
+            paymentURL VARCHAR(255),
+            amount NUMERIC(10,2),
+            quantity NUMERIC,
+            FOREIGN KEY (buyerId) REFERENCES users(uid),
+            FOREIGN KEY (productId) REFERENCES products(id),
+            buyTime TIMESTAMP DEFAULT now()
+        );
+        `;
+
+        await connection.query(query);
+        console.log('History table created');
+    }catch(err){
+        console.error(err);
+        console.error('History table creation failed');
+    }  
+}
+createHistoryTable();
 
 module.exports = connection;
