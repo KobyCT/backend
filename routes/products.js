@@ -1,6 +1,6 @@
 const express = require('express');
 
-const {getProducts,search,getMyProducts,createProduct,updateProduct,getUnApproveProducts,approveProducts,unApproveProducts,deleteProduct,getAllType,AddType,getRecommendProducts,deleteType} = require('../controllers/products');
+const {getProducts,getProductCount,search,getMyProducts,createProduct,updateProduct,getUnApproveProducts,approveProducts,unApproveProducts,deleteProduct,getAllTag,AddTag,getRecommendProducts,deleteTag} = require('../controllers/products');
 
 const {protect,authorize} = require('../middlewares/auth');
 
@@ -12,8 +12,9 @@ router.route('/unapprove/:id').get(protect,authorize('admin'),unApproveProducts)
 router.route('/approve').get(protect,authorize('admin'),getUnApproveProducts);
 router.route('/search').get(protect,authorize('admin','acceptuser'),search);
 router.route('/myproduct').get(protect,authorize('admin','acceptuser'),getMyProducts);
+router.route('/tag/').get(protect,authorize('admin','acceptuser'),getAllTag).post(protect,authorize('admin','acceptuser'),AddTag).delete(protect,authorize('admin','acceptuser'),deleteTag);
+router.route('/amount').get(protect,authorize('admin'),getProductCount);
 router.route('/:id').put(protect,authorize('admin','acceptuser'),updateProduct).delete(protect,authorize('admin','acceptuser'),deleteProduct);
-router.route('/type/').get(protect,authorize('admin','acceptuser'),getAllType).post(protect,authorize('admin','acceptuser'),AddType).delete(protect,authorize('admin','acceptuser'),deleteType);
 router.route('/recommend/:id').get(protect,authorize('admin','acceptuser'),getRecommendProducts);
 
 module.exports = router;

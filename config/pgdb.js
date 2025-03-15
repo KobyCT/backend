@@ -1,5 +1,5 @@
 const { query } = require('express');
-const {Pool} = require('pg');
+const { Pool } = require('pg');
 
 var connection= new Pool({
     user: 'postgres',
@@ -50,22 +50,24 @@ async function createProductsTable() {
             shippingType VARCHAR(255),
             shippingCost NUMERIC(10,2),
             approveDescription VARCHAR(255),
-            isApprove boolean,
-            isOpen boolean,
+            isApprove BOOLEAN,
+            isOpen BOOLEAN,
             imageUrl VARCHAR(255),
-            createTime TIMESTAMP DEFAULT now(),
+            createTime BIGINT DEFAULT EXTRACT(EPOCH FROM now()), 
             FOREIGN KEY (sellerId) REFERENCES users(uid)
         );
         `; 
 
         await connection.query(query);
         console.log('Products table created');
-    }catch(err){
+    } catch (err) {
         console.error(err);
         console.error('Products table creation failed');
     }  
 }
+
 createProductsTable();
+
 
 
 

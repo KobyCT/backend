@@ -1,68 +1,86 @@
-const {Product,Type} = require('../models/product');
+const {Product,Tag} = require('../models/product');
 
-exports.getAllType = async (req,res,next) => {
-    Type.getAllType((err, data)=>{
+exports.getAllTag = async (req,res,next) => {
+    Tag.getAllTag((err, data)=>{
         if(err)
-            res.status(500).send({message: err.message || 'Some error occurred while retrieving All Type'});
+            res.status(500).send({message: err.message || 'Some error occurred while retrieving All Tag'});
         else res.status(200).json(data);
     });
 };
 
-exports.AddType = async (req,res,next) => {
+exports.AddTag = async (req,res,next) => {
     if(!req.body) {
         res.status(400).json({success: false, msg: 'Content cannot be empty!'});
     }
 
-        const type = new Type({
+        const tag = new Tag({
             productid : req.body.productid,
-            type : req.body.type,
+            tag : req.body.tag,
         });
 
-        Type.AddType(type, (err, data)=>{
+        Tag.AddTag(tag, (err, data)=>{
             if(err)
-                res.status(500).send({message: err.message || 'Some error occurred while add type'});
+                res.status(500).send({message: err.message || 'Some error occurred while add Tag'});
             else res.status(201).json(data);
         });
 };
 
-exports.deleteType = (req,res) => {
-    if(!req.body) {
-        res.status(400).json({success: false, msg: 'Content cannot be empty!'});
+exports.deleteTag = (req,res) => {
+    if (!req.body || !req.body.productid || !req.body.tag) {
+        return res.status(400).json({ success: false, msg: 'Missing productid or tag' });
     }
+    
+    const tag = new Tag({
+        productid : parseInt(req.body.productid),
+        tag : req.body.tag,
+    });
 
-        const type = new Type({
-            productid : req.body.productid,
-            type : req.body.type,
-        });
+    console.log(tag);
 
-        Type.RemoveType(type, (err, data)=>{
-            if(err)
-                res.status(500).send({message: err.message || 'Some error occurred while delete type'});
-            else res.status(201).json(data);
-        });
+    Tag.RemoveTag(tag, (err, data)=>{
+       if(err) {
+           return res.status(500).send({message: err.message || 'Some error occurred while delete tag'});
+       }
+        res.status(200).json(data);
+    });
 };
 
 
 
 exports.getProducts = async (req, res, next) => {
-    const { select, sort ,type} = req.query;
-    
+    const { select, sort, type, page = 1, limit = 10, time } = req.query;
+
     const columns = select ? select.split(',').map(col => `"${col.trim()}"`).join(', ') : '*';
-    
+
     let orderBy = 'createTime DESC';
     if (sort) {
         const [col, order] = sort.split(':');
         const validOrder = order && order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
         orderBy = `"${col.trim()}" ${validOrder}`;
     }
-    
-    let query;
-    if(type){
-        query = `SELECT ${columns} FROM products WHERE isApprove = true AND id IN (SELECT productid FROM type WHERE type = '${type}') ORDER BY ${orderBy};`;
-    }else{
-        query = `SELECT ${columns} FROM products WHERE isApprove = true ORDER BY ${orderBy};`;
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let typeFilter = '';
+    if (type) {
+        const typeList = type.split(',').map(t => `'${t.trim()}'`).join(', ');
+        typeFilter = `AND id IN (SELECT productid FROM type WHERE type IN (${typeList}))`;
     }
+
+    let timeFilter = '';
+    if (time) {
+        timeFilter = `AND createTime < ${time}`; 
+    }
+
+    const query = `
+        SELECT ${columns} FROM products 
+        WHERE isApprove = true ${typeFilter} ${timeFilter}
+        ORDER BY ${orderBy}
+        LIMIT ${limit} OFFSET ${offset};
+    `;
+
     console.log(query);
+
     Product.query(query, (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
@@ -71,6 +89,7 @@ exports.getProducts = async (req, res, next) => {
         }
     });
 };
+
 
 exports.getUnApproveProducts = async (req, res, next) => {
     const query = `SELECT * FROM products WHERE isApprove = false`;
@@ -125,7 +144,7 @@ exports.getMyProducts = async (req, res, next) => {
 };
 
 exports.getRecommendProducts = async (req,res,next) => {
-    Product.getSameProductType(req.params.id,(err, data)=>{
+    Product.getSameProductTag(req.params.id,(err, data)=>{
         if(err)
             res.status(500).send({message: err.message || 'Some error occurred while retrieving Recommend Products'});
         else res.status(200).json(data);
@@ -236,5 +255,16 @@ exports.deleteProduct = (req,res) => {
             success: true,
             data: {}
         });
+    });
+};
+
+exports.getProductCount = async (req, res) => {
+    Product.getProductCount((err,data)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({success:false,massage:"Some error while count product"});
+        }else{
+            res.status(200).json({success:true,data:data});
+        }
     });
 };

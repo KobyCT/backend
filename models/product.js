@@ -16,82 +16,85 @@ const Product = function(product){
     this.imageURL = product.imageURL;
 };
 
-const Type = function(type){
-    this.productid = type.productid;
-    this.type = type.type;
+const Tag = function(tags){
+    this.productid = tags.productid;
+    this.tag = tags.tag;
 };
 
-Type.getAllType = (result) => {
-    sql.query('SELECT * FROM type;',(err,res)=>{
+Tag.getAllTag = (result) => {
+    sql.query('SELECT * FROM tags;',(err,res)=>{
         if(err){
             console.log('error: ', err);
             result(err,null);
             return;
         }
-        console.log('All type');
+        console.log('All tags');
         console.log(res.rows);
         result(null, res.rows);
     });
 };
 
-Type.getThisProductType = (id,result) => {
-    sql.query(`SELECT DISTINCT type FROM type WHERE productid = ${id};`,(err,res)=>{
+Tag.getThisProductTag = (id,result) => {
+    sql.query(`SELECT DISTINCT tag FROM tags WHERE productid = ${id};`,(err,res)=>{
         if(err){
             console.log('error: ', err);
             result(err,null);
             return;
         }
-        console.log('All type');
+        console.log('All tags');
         console.log(res.rows);
         result(null, res.rows);
     });
 };
 
-Type.AddType = (newType,result) => {
-    const {productid,type} = newType;
-    
+Tag.AddTag = (newTag, result) => {
+    const { productid, tag } = newTag;
+
     const query = `
-    INSERT INTO type (productid,type)
-    VALUES ('$1','$2')
+    INSERT INTO tags (productid, tag)
+    VALUES ($1, $2)
     RETURNING *;
     `;
 
-    const values = [productid,type];
+    const values = [productid, tag];
 
-    sql.query(query, values, (err, res)=>{
-        if(err) {
-            console.log('create error: ',err);
-            result(err,null);
+    sql.query(query, values, (err, res) => {
+        if (err) {
+            console.log('create error: ', err);
+            result(err, null);
             return;
         }
-        console.log('Add type:')
-        console.log(res.rows);
+        console.log('Add tag:', res.rows);
         result(null, res.rows);
     });
 };
 
-Type.RemoveType = (deletedType,result) => {
-    const {productid,type} = deletedType;
+
+Tag.RemoveTag = (deletedTag, result) => {
+    const { productid, tag } = deletedTag;
     
     const query = `
-    DELETE FROM type WHERE productid = ${productid} AND type = '${type}' RETURNING *;
+    DELETE FROM tags WHERE productid = $1 AND tag = $2 RETURNING *;
     `;
 
-    sql.query(query, (err, res)=>{
-        if(err){
-            console.log('error: ',err);
-            result(null, err);
+    const values = [productid, tag];
+
+    sql.query(query, values, (err, res) => {
+        if (err) {
+            console.log(err);
+            result(err, null);
             return;
         }
-        if(res.affectedRows == 0){
-            result({kind:'not_found'},null);
+        if (res.rowCount === 0) {  
+            result({ kind: 'not_found' }, null);
             return;
         }
 
-        console.log(`delete ${type} type in productid: `, productid);
+        console.log(`Deleted tag '${tag}' from productid: ${productid}`);
         result(null, res.rows);
     });
 };
+
 
 Product.query = (query,result) => {
     sql.query(query,(err,res)=>{
@@ -195,10 +198,10 @@ Product.remove = (id,result) => {
     });
 };
 
-Product.getSameProductType = (id,result)=>{
+Product.getSameProductTag = (id,result)=>{
     const query = `SELECT DISTINCT * FROM products WHERE id != ${id} AND id IN (
-SELECT DISTINCT productid FROM type WHERE type IN (
-SELECT type FROM type WHERE productid = ${id} GROUP BY type)) ORDER BY createtime DESC LIMIT 5`
+SELECT DISTINCT productid FROM tags WHERE tag IN (
+SELECT tag FROM tags WHERE productid = ${id} GROUP BY tag)) ORDER BY createtime DESC LIMIT 5`
     sql.query(query, (err, res)=>{
         if(err){
             console.log('error: ', err);
@@ -211,4 +214,33 @@ SELECT type FROM type WHERE productid = ${id} GROUP BY type)) ORDER BY createtim
     });
 };
 
-module.exports = {Product,Type};
+Product.getProductCount = async (result) => {
+    try {
+        const totalQuery = `
+            SELECT COUNT(*) AS total_products
+            FROM products
+            WHERE isApprove = true;
+        `;
+        const totalResult = await sql.query(totalQuery);
+        const totalProducts = totalResult.rows[0].total_products;
+
+        const tagQuery = `
+            SELECT t.tag, COUNT(p.id) AS product_count
+            FROM tags t
+            LEFT JOIN products p ON p.id = t.productid
+            WHERE p.isApprove = true
+            GROUP BY t.tag;
+        `;
+        const tagResult = await sql.query(tagQuery);
+
+        result(null, {
+            totalProducts: totalProducts,
+            productsPerTag: tagResult.rows
+        });
+    } catch (err) {
+        result(err, null);
+    }
+};
+
+
+module.exports = {Product,Tag};
