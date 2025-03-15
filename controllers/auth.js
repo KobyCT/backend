@@ -94,7 +94,7 @@ exports.getCallback = async (req, res) => {
                     facultyNameEN: userData.data.facultyNameEN,
                     studentYear: userData.data.studentYear,
                     studentId: userData.data.studentId,
-                    role: 'unacceptuser'
+                    role: 'acceptuser'
                 });
                 
                 User.create(user, (err, data)=>{
