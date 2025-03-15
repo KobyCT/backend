@@ -9,6 +9,33 @@ var connection= new Pool({
     port: 5432,
 });
 
+async function createUsersTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS users (
+            uid VARCHAR(255) UNIQUE PRIMARY KEY,
+            firstNameTH VARCHAR(255) NOT NULL,
+            firstNameEN VARCHAR(255) NOT NULL,
+            lastNameTH VARCHAR(255) NOT NULL,
+            lastNameEN VARCHAR(255) NOT NULL,
+            facultyId VARCHAR(255),
+            facultyNameTH VARCHAR(255),
+            facultyNameEN VARCHAR(255),
+            studentYear VARCHAR(255),
+            studentId VARCHAR(255),
+            role VARCHAR(255) DEFAULT 'unacceptuser'
+        );
+        `;
+
+        await connection.query(query);
+        console.log('Users table created');
+    }catch(err){
+        console.error(err);
+        console.error('Users table creation failed');
+    }  
+}
+createUsersTable();
+
 async function createProductsTable() {
     try {
         const query = `
@@ -40,32 +67,6 @@ async function createProductsTable() {
 }
 createProductsTable();
 
-async function createUsersTable() {
-    try {
-        const query = `
-        CREATE TABLE IF NOT EXISTS users (
-            uid VARCHAR(255) UNIQUE PRIMARY KEY,
-            firstNameTH VARCHAR(255) NOT NULL,
-            firstNameEN VARCHAR(255) NOT NULL,
-            lastNameTH VARCHAR(255) NOT NULL,
-            lastNameEN VARCHAR(255) NOT NULL,
-            facultyId VARCHAR(255),
-            facultyNameTH VARCHAR(255),
-            facultyNameEN VARCHAR(255),
-            studentYear VARCHAR(255),
-            studentId VARCHAR(255),
-            role VARCHAR(255) DEFAULT 'unacceptuser'
-        );
-        `;
-
-        await connection.query(query);
-        console.log('Users table created');
-    }catch(err){
-        console.error(err);
-        console.error('Users table creation failed');
-    }  
-}
-createUsersTable();
 
 
 async function createCartTable() {

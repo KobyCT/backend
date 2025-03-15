@@ -94,12 +94,13 @@ exports.getCallback = async (req, res) => {
                     facultyNameEN: userData.data.facultyNameEN,
                     studentYear: userData.data.studentYear,
                     studentId: userData.data.studentId,
-                    role: 'user'
+                    role: 'unacceptuser'
                 });
                 
                 User.create(user, (err, data)=>{
                     if(err)
                         res.status(500).send({message: err.message || 'Some error occurred while register User'});
+                    if(req.query.lang) data.language = req.query.lang;
                     sendTokenResponse(userId,200,res,data);
                 });
             } else {
@@ -108,7 +109,6 @@ exports.getCallback = async (req, res) => {
                 });
             }
         } else {
-
             //Send token after found user in database
             sendTokenResponse(userId,200,res,data);
         }
