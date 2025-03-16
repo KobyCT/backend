@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const jwt=require('jsonwebtoken');
 const axios = require('axios');
+const TailwindColor = require('./color');
 
 const sendTokenResponse=(userId,statusCode,res,data)=>{
     //Create token
@@ -83,6 +84,11 @@ exports.getCallback = async (req, res) => {
         if(err) {
             if(err.kind === 'not_found') {
                 //Register to database after not found
+                const color = new TailwindColor;
+                const randomColor = color.pick();
+            
+                console.log("Tailwind color : " + randomColor);
+                
                 const user = new User({
                     uid: userData.data.userId,
                     firstNameTH: userData.data.firstNameTH,
@@ -94,6 +100,7 @@ exports.getCallback = async (req, res) => {
                     facultyNameEN: userData.data.facultyNameEN,
                     studentYear: userData.data.studentYear,
                     studentId: userData.data.studentId,
+                    color: randomColor,
                     role: 'acceptuser'
                 });
                 

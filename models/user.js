@@ -10,14 +10,14 @@ const User = function(user){
    this.lastNameEN = user.lastNameEN;
    this.facultyId = user.facultyId;
    this.facultyNameTH = user.facultyNameTH;
-   this.facultyNameEN == user.facultyNameEN;
+   this.facultyNameEN = user.facultyNameEN;
    this.studentYear = user.studentYear;
    this.studentId = user.studentId;
+   this.color = user.color;
    this.role = user.role;
 };
 
 User.findById = (id,result) =>{
-    console.log(id);
     const query = `
     SELECT * FROM users WHERE uid = '${id}';
     `;
@@ -55,11 +55,11 @@ User.getAll = (result) => {
 User.create = (newUser, result) => {
     console.log(newUser);
 
-    const {uid,firstNameTH,firstNameEN,lastNameTH,lastNameEN,facultyId,facultyNameTH,facultyNameEN,studentYear,studentId,role} = newUser;
+    const {uid,firstNameTH,firstNameEN,lastNameTH,lastNameEN,facultyId,facultyNameTH,facultyNameEN,studentYear,studentId,color,role} = newUser;
     
     const query = `
-    INSERT INTO users (uid,firstNameTH,firstNameEN,lastNameTH,lastNameEN,facultyId,facultyNameTH,facultyNameEN,studentYear,studentId,role)
-    VALUES ('${uid}','${firstNameTH}','${firstNameEN}','${lastNameTH}','${lastNameEN}','${facultyId}','${facultyNameTH}','${facultyNameEN}','${studentYear}','${studentId}','${role}')
+    INSERT INTO users (uid,firstNameTH,firstNameEN,lastNameTH,lastNameEN,facultyId,facultyNameTH,facultyNameEN,studentYear,studentId,color,role)
+    VALUES ('${uid}','${firstNameTH}','${firstNameEN}','${lastNameTH}','${lastNameEN}','${facultyId}','${facultyNameTH}','${facultyNameEN}','${studentYear}','${studentId}','${color}','${role}')
     RETURNING *;
     `;
 

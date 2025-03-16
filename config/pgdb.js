@@ -23,7 +23,8 @@ async function createUsersTable() {
             facultyNameEN VARCHAR(255),
             studentYear VARCHAR(255),
             studentId VARCHAR(255),
-            role VARCHAR(255) DEFAULT 'unacceptuser'
+            color VARCHAR(255),
+            role VARCHAR(255) DEFAULT 'acceptuser'
         );
         `;
 
