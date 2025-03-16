@@ -48,7 +48,7 @@ exports.deleteTag = (req,res) => {
 
 
 exports.getProducts = async (req, res, next) => {
-    const { select, sort, type, page = 1, limit = 10, time } = req.query;
+    const { select, sort, tag, page = 1, limit = 10, time } = req.query;
 
     const columns = select ? select.split(',').map(col => `"${col.trim()}"`).join(', ') : '*';
 
@@ -61,10 +61,10 @@ exports.getProducts = async (req, res, next) => {
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    let typeFilter = '';
-    if (type) {
-        const typeList = type.split(',').map(t => `'${t.trim()}'`).join(', ');
-        typeFilter = `AND id IN (SELECT productid FROM type WHERE type IN (${typeList}))`;
+    let tagFilter = '';
+    if (tag) {
+        const tagList = tag.split(',').map(t => `'${t.trim()}'`).join(', ');
+        tagFilter = `AND id IN (SELECT productid FROM tags WHERE tag IN (${tagList}))`;
     }
 
     let timeFilter = '';
@@ -74,7 +74,7 @@ exports.getProducts = async (req, res, next) => {
 
     const query = `
         SELECT ${columns} FROM products 
-        WHERE isApprove = true ${typeFilter} ${timeFilter}
+        WHERE isApprove = true ${tagFilter} ${timeFilter}
         ORDER BY ${orderBy}
         LIMIT ${limit} OFFSET ${offset};
     `;
