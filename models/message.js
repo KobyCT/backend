@@ -25,7 +25,7 @@ Message.createMessage = (newMessage,result)=>{
     const {chatId,senderId,text} = newMessage;
 
     const query = `
-    INSERT INTO chats (chatId,senderId,text)
+    INSERT INTO messages (chatId,senderId,text)
     VALUES ('${chatId}','${senderId}','${text}')
     RETURNING *;
     `;

@@ -155,6 +155,7 @@ exports.search = async (req, res, next) => {
     const search = req.query.q;
     
     console.log(req.query.q);
+    
     const query = `SELECT * FROM products WHERE name ILIKE '%${search}%'`;
     
     console.log(query);

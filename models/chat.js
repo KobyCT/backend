@@ -26,12 +26,11 @@ Chat.createChat = (newChat,result) =>{
     const {members,productId,quantity} = newChat;
 
     const query = `
-    INSERT INTO chats (members,productId,quantity)
-    VALUES ('${members}','${productId}','${quantity}')
-    RETURNING *;
-    `;
+  INSERT INTO chats (members, productId, quantity)
+  VALUES ($1, $2, $3) RETURNING *;
+`;
 
-    sql.query(query, (err, res)=>{
+    sql.query(query, [members, productId, quantity], (err, res)=>{
         if(err) {
             console.log('create error: ',err);
             result(err,null);

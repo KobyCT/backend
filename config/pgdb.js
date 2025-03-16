@@ -120,12 +120,12 @@ async function createChatTable() {
         const query = `
         CREATE TABLE IF NOT EXISTS chats(
             chatId SERIAL,
-            members VARCHAR[2] NOT NULL,
-            productId SERIAL,
+            members TEXT[] NOT NULL,
+            productId INTEGER,
             quantity NUMERIC,
-            craeteTime TIMESTAMP DEFAULT now(),
+            createTime TIMESTAMP DEFAULT now(),
             FOREIGN KEY (productId) REFERENCES products(id),
-            PRIMARY KEY(chatId,productId)
+            PRIMARY KEY(chatId)
         );
         `;
 
@@ -142,7 +142,8 @@ async function createMessageTable() {
     try {
         const query = `
         CREATE TABLE IF NOT EXISTS messages(
-            chatId SERIAL,
+            messageId SERIAL PRIMARY KEY,
+            chatId INTEGER REFERENCES chats(chatId),
             senderId VARCHAR(255),
             text VARCHAR(255),
             sendTime TIMESTAMP DEFAULT now()
@@ -225,5 +226,24 @@ async function createHistoryTable() {
     }  
 }
 createHistoryTable();
+
+async function createIndex() {
+    try {
+        const query = `
+    CREATE INDEX IF NOT EXISTS idx_products_isapprove ON products (isApprove);
+    CREATE INDEX IF NOT EXISTS idx_products_sellerid ON products (sellerId);
+    CREATE INDEX IF NOT EXISTS idx_products_name ON products (name);
+    CREATE INDEX IF NOT EXISTS idx_tags_productid_tag ON tags (productid, tag);
+        `; 
+
+        await connection.query(query);
+        console.log('Index created');
+    } catch (err) {
+        console.error(err);
+        console.error('Index creation failed');
+    }  
+}
+
+createIndex();
 
 module.exports = connection;
