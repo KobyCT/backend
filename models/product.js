@@ -5,16 +5,22 @@ const Product = function(product){
     this.sellerId = product.sellerId;
     this.name = product.name;
     this.description = product.description;
+    this.detailOneDescription = product.detailOneDescription;
+    this.detailTwoDescription = product.detailTwoDescription;
+    this.detailThreeDescription = product.detailThreeDescription;
+    this.detailFourDescription = product.detailFourDescription;
+    this.contition = product.contition;
+    this.contitionDescription = product.contitionDescription;
     this.price = product.price;
     this.oldPrice = product.oldPrice;
     this.quantity = product.quantity;
     this.shippingType = product.shippingType;
     this.shippingCost = product.shippingCost;
-    this.approveDescription = product.approveDescription;
     this.isApprove = product.isApprove;
     this.isOpen = product.isOpen;
     this.imageURL = product.imageURL;
 };
+
 
 const Tag = function(tags){
     this.productid = tags.productid;
@@ -49,15 +55,15 @@ Tag.getThisProductTag = (id,result) => {
 
 Tag.AddTag = (newTag, result) => {
     const { productid, tag } = newTag;
-
+    
     const query = `
     INSERT INTO tags (productid, tag)
     VALUES ($1, $2)
     RETURNING *;
     `;
-
+    
     const values = [productid, tag];
-
+    
     sql.query(query, values, (err, res) => {
         if (err) {
             console.log('create error: ', err);
@@ -76,9 +82,9 @@ Tag.RemoveTag = (deletedTag, result) => {
     const query = `
     DELETE FROM tags WHERE productid = $1 AND tag = $2 RETURNING *;
     `;
-
+    
     const values = [productid, tag];
-
+    
     sql.query(query, values, (err, res) => {
         if (err) {
             console.log(err);
@@ -89,7 +95,7 @@ Tag.RemoveTag = (deletedTag, result) => {
             result({ kind: 'not_found' }, null);
             return;
         }
-
+        
         console.log(`Deleted tag '${tag}' from productid: ${productid}`);
         result(null, res.rows);
     });
@@ -109,71 +115,71 @@ Product.query = (query,result) => {
     });
 };
 
+Product.create = async (newProduct, result) => {
+    try {
+        const {
+            name, sellerId, description, detailOneDescription, detailTwoDescription,
+            detailThreeDescription, detailFourDescription, condition, conditionDescription, 
+            price, oldPrice, quantity, shippingType, shippingCost, isApprove, isOpen, 
+            imageURL
+        } = newProduct;
 
-Product.create = (newProduct, result) => {
-    const {
-        name, sellerId, description, price, oldPrice, quantity,
-        shippingType, shippingCost, approveDescription, isApprove,
-        isOpen, imageURL
-    } = newProduct;
-    
-    const query = `
-    INSERT INTO products (name, sellerId, description, price, oldPrice, quantity, 
-                          shippingType, shippingCost, approveDescription, isApprove, isOpen, imageURL)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-    RETURNING *;
-    `;
+        const query = `
+        INSERT INTO products (
+            name, sellerId, description, detailOneDescription, detailTwoDescription,
+            detailThreeDescription, detailFourDescription, condition, conditionDescription, 
+            price, oldPrice, quantity, shippingType, shippingCost, isApprove, 
+            isOpen, imageURL
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        RETURNING *;
+        `;
 
-    const values = [
-        name, sellerId, description, price, oldPrice, quantity,
-        shippingType, shippingCost, approveDescription, isApprove,
-        isOpen, imageURL
-    ];
+        const values = [
+            name, sellerId, description, detailOneDescription, detailTwoDescription,
+            detailThreeDescription, detailFourDescription, condition, conditionDescription,
+            price, oldPrice || null, quantity, shippingType, shippingCost, 
+            isApprove, isOpen, imageURL
+        ];
 
-    sql.query(query, values, (err, res) => {
-        if (err) {
-            console.log('create error:', err);
-            result(err, null);
-            return;
-        }
-        console.log('create product:', res.rows);
-        result(null, res.rows);
-    });
+        const res = await sql.query(query, values);
+        console.log('Created product:', res.rows[0]);
+        result(null, res.rows[0]);
+    } catch (err) {
+        console.error('Create error:', err);
+        result(err, null);
+    }
 };
 
+Product.updateById = async (id, product, result) => {
+    try {
+        const updates = Object.keys(product)
+            .filter((key) => product[key] !== undefined)
+            .map((key, index) => `${key} = $${index + 1}`)
+            .join(', ');
 
-Product.updateById = (id, product, result) => {
-    const query = `
-    UPDATE products 
-    SET name = $1, sellerId = $2, description = $3, price = $4, oldPrice = $5, quantity = $6,
-        shippingType = $7, shippingCost = $8, approveDescription = $9, isApprove = $10, 
-        isOpen = $11, imageURL = $12
-    WHERE id = $13
-    RETURNING *;
-    `;
-
-    const values = [
-        product.name, product.sellerId, product.description, product.price, product.oldPrice, 
-        product.quantity, product.shippingType, product.shippingCost, product.approveDescription, 
-        product.isApprove, product.isOpen, product.imageURL, id
-    ];
-
-    sql.query(query, values, (err, res) => {
-        if (err) {
-            console.log('error:', err);
-            result(err, null);
-            return;
+        if (!updates) {
+            return result({ msg: 'no_data_to_update' }, null); 
         }
+
+        const values = Object.values(product).filter((value) => value !== undefined);
+        values.push(id); 
+
+        const query = `UPDATE products SET ${updates} WHERE id = $${values.length} RETURNING *;`;
+
+        const res = await sql.query(query, values);
 
         if (res.rowCount === 0) {
-            result({ msg: 'not_found' }, null);
-            return;
+            return result({ msg: 'not_found' }, null);
         }
 
-        console.log('update product:', res.rows);
-        result(null, res.rows);
-    });
+        console.log('Updated product:', res.rows[0]);
+        result(null, res.rows[0]);
+    } catch (err) {
+        console.error('Update error:', err);
+        result(err, null);
+    }
 };
+
 
 
 Product.remove = (id,result) => {

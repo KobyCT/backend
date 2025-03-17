@@ -92,7 +92,7 @@ exports.getProducts = async (req, res, next) => {
 
 
 exports.getUnApproveProducts = async (req, res, next) => {
-    const query = `SELECT * FROM products WHERE isApprove = false`;
+    const query = `SELECT * FROM products WHERE isApprove = false ORDER BY id ASC`;
     
     Product.query(query, (err, data) => {
         if (err) {
@@ -174,40 +174,48 @@ exports.createProduct = async (req, res, next) => {
         return res.status(400).json({ success: false, msg: 'Content Cannot be empty!' });
     }
 
-    let seller = req.user.uid; 
-    if (req.user.role === 'admin' && req.body.sellerId) {
-        seller = req.body.sellerId; 
+    try {
+        let seller = req.user.uid;
+        if (req.user.role === 'admin' && req.body.sellerId) {
+            seller = req.body.sellerId;
+        }
+
+        let open = req.body.isOpen || false;
+
+        const product = {
+            name: req.body.name?.trim() || '',
+            sellerId: seller,
+            description: req.body.description?.replace(/'/g, "''") || '',
+            detailOneDescription: req.body.detailOneDescription?.trim() || '',
+            detailTwoDescription: req.body.detailTwoDescription?.trim() || '',
+            detailThreeDescription: req.body.detailThreeDescription?.trim() || '',
+            detailFourDescription: req.body.detailFourDescription?.trim() || '',
+            condition: req.body.condition?.trim() || '',
+            conditionDescription: req.body.conditionDescription?.trim() || '',
+            price: parseFloat(req.body.price) || 0,
+            oldPrice: parseFloat(req.body.oldPrice) || 0,
+            quantity: parseInt(req.body.quantity, 10) || 0,
+            shippingType: req.body.shippingType?.trim() || '',
+            shippingCost: parseFloat(req.body.shippingCost) || 0,
+            isApprove: false,
+            isOpen: open,
+            imageURL: req.body.imageURL?.trim() || '',
+        };
+
+        console.log(product);
+
+        Product.create(product, (err, data) => {
+            if (err) {
+                return res.status(500).send({ message: err.message || 'Some error occurred while creating Product' });
+            }
+            res.status(201).json(data);
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error', error });
     }
-
-    let open = false;
-    if(req.body.isOpen){
-        open = req.body.isOpen;
-    }
-
-    const product = new Product({
-        name: req.body.name,
-        sellerId:seller,
-        description: req.body.description.replace(/'/g, "''"), 
-        price: parseFloat(req.body.price) || 0, 
-        oldPrice: parseFloat(req.body.oldPrice) || 0,
-        quantity: parseInt(req.body.quantity, 10) || 0,
-        shippingType: req.body.shippingType.trim(),
-        shippingCost: parseFloat(req.body.shippingCost) || 0,
-        approveDescription: req.body.approveDescription.replace(/'/g, "''"), 
-        isApprove: false,
-        isOpen: open,
-        imageURL: req.body.imageURL
-    });
-    
-
-    console.log(product);
-
-    Product.create(product, (err, data) => {
-        if (err)
-            return res.status(500).send({ message: err.message || 'Some error occurred while creating Product' });
-        res.status(201).json(data);
-    });
 };
+
 
 
 exports.updateProduct = (req, res) => {
