@@ -58,7 +58,7 @@ async function createProductsTable() {
             shippingCost NUMERIC(10,2),
             isApprove BOOLEAN,
             isOpen BOOLEAN,
-            imageUrl VARCHAR(255),
+            imageName VARCHAR(255),
             createTime BIGINT DEFAULT EXTRACT(EPOCH FROM now()), 
             FOREIGN KEY (sellerId) REFERENCES users(uid)
         );

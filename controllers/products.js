@@ -1,4 +1,9 @@
 const {Product,Tag} = require('../models/product');
+const { uploadFile , deleteFile , getObjectSignedUrl}= require('./s3.js');
+const crypto = require('crypto');
+const sharp = require('sharp');
+
+const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
 
 exports.getAllTag = async (req,res,next) => {
     Tag.getAllTag((err, data)=>{
@@ -81,10 +86,13 @@ exports.getProducts = async (req, res, next) => {
 
     console.log(query);
 
-    Product.query(query, (err, data) => {
+    Product.query(query, async (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
+            for (let product of data) {
+                product.imageUrl = await getObjectSignedUrl(product.imageName)
+              }
             res.status(200).json(data);
         }
     });
@@ -182,6 +190,16 @@ exports.createProduct = async (req, res, next) => {
 
         let open = req.body.isOpen || false;
 
+        const file = req.file;
+        const imageName = generateFileName();
+
+        //upload file to s3
+        const fileBuffer = await sharp(file.buffer)
+            .resize({ height: 1920, width: 1080, fit: "contain" })
+            .toBuffer()
+
+        await uploadFile(fileBuffer, imageName, file.mimetype)
+
         const product = {
             name: req.body.name?.trim() || '',
             sellerId: seller,
@@ -199,7 +217,7 @@ exports.createProduct = async (req, res, next) => {
             shippingCost: parseFloat(req.body.shippingCost) || 0,
             isApprove: false,
             isOpen: open,
-            imageURL: req.body.imageURL?.trim() || '',
+            imageName: imageName,
         };
 
         console.log(product);
@@ -249,7 +267,7 @@ exports.updateProduct = (req, res) => {
 
 
 exports.deleteProduct = (req,res) => {
-    Product.remove(req.params.id, (err,data)=>{
+    Product.remove(req.params.id, async (err,data)=>{
         if(err) {
             if(err.kind === 'not_found') {
                 res.status(404).send({
@@ -260,10 +278,13 @@ exports.deleteProduct = (req,res) => {
                     message: 'Could not delete Product with id' + req.params.id,
                 });
             }
-        } else res.status(200).json({
-            success: true,
-            data: {}
-        });
+        } else {
+            await deleteFile(data.imageName);
+            res.status(200).json({
+                success: true,
+                data: data
+            });
+        }
     });
 };
 

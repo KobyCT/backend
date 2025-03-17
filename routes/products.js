@@ -1,4 +1,8 @@
 const express = require('express');
+const multer = require('multer');
+
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 
 const {getProducts,getProductCount,search,getMyProducts,createProduct,updateProduct,getUnApproveProducts,approveProducts,unApproveProducts,deleteProduct,getAllTag,AddTag,getRecommendProducts,deleteTag} = require('../controllers/products');
 
@@ -6,7 +10,7 @@ const {protect,authorize} = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.route('/').get(protect,authorize('admin','acceptuser'),getProducts).post(protect,authorize('admin','acceptuser'),createProduct);
+router.route('/').get(protect,authorize('admin','acceptuser'),getProducts).post(protect,authorize('admin','acceptuser'), upload.single('image'), createProduct);
 router.route('/approve/:id').get(protect,authorize('admin'),approveProducts);
 router.route('/unapprove/:id').get(protect,authorize('admin'),unApproveProducts);
 router.route('/approve').get(protect,authorize('admin'),getUnApproveProducts);

@@ -18,7 +18,7 @@ const Product = function(product){
     this.shippingCost = product.shippingCost;
     this.isApprove = product.isApprove;
     this.isOpen = product.isOpen;
-    this.imageURL = product.imageURL;
+    this.imageName = product.imageName;
 };
 
 
@@ -121,7 +121,7 @@ Product.create = async (newProduct, result) => {
             name, sellerId, description, detailOneDescription, detailTwoDescription,
             detailThreeDescription, detailFourDescription, condition, conditionDescription, 
             price, oldPrice, quantity, shippingType, shippingCost, isApprove, isOpen, 
-            imageURL
+            imageName
         } = newProduct;
 
         const query = `
@@ -129,7 +129,7 @@ Product.create = async (newProduct, result) => {
             name, sellerId, description, detailOneDescription, detailTwoDescription,
             detailThreeDescription, detailFourDescription, condition, conditionDescription, 
             price, oldPrice, quantity, shippingType, shippingCost, isApprove, 
-            isOpen, imageURL
+            isOpen, imageName
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         RETURNING *;
         `;
@@ -138,7 +138,7 @@ Product.create = async (newProduct, result) => {
             name, sellerId, description, detailOneDescription, detailTwoDescription,
             detailThreeDescription, detailFourDescription, condition, conditionDescription,
             price, oldPrice || null, quantity, shippingType, shippingCost, 
-            isApprove, isOpen, imageURL
+            isApprove, isOpen, imageName
         ];
 
         const res = await sql.query(query, values);
