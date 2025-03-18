@@ -40,7 +40,6 @@ createUsersTable();
 async function createProductsTable() {
     try {
         const query = `
-        DROP TABLE products CASCADE;
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
             sellerId VARCHAR(255) NOT NULL,

@@ -94,12 +94,12 @@ exports.getProducts = async (req, res, next) => {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
             
-                for (let image of product.verifyImages) {
+                for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
             
-                for (let image of product.productImages) {
+                for (let image of product.productimages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
@@ -122,12 +122,12 @@ exports.getUnApproveProducts = async (req, res, next) => {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
             
-                for (let image of product.verifyImages) {
+                for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
             
-                for (let image of product.productImages) {
+                for (let image of product.productimages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
@@ -176,12 +176,12 @@ exports.getMyProducts = async (req, res, next) => {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
             
-                for (let image of product.verifyImages) {
+                for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
-
-                for (let image of product.productImages) {
+            
+                for (let image of product.productimages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
