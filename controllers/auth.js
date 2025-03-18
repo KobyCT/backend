@@ -83,8 +83,6 @@ exports.getCallback = async (req, res) => {
         if(err) {
             if(err.kind === 'not_found') {
                 const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
-            
-                console.log("Tailwind color : " + randomColor);
                 
                 const user = new User({
                     uid: userData.data.userId,
