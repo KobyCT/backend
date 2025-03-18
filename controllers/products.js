@@ -122,12 +122,12 @@ exports.getUnApproveProducts = async (req, res, next) => {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
             
-                for (let image of product.verifyimages) {
+                for (let image of product.verifyImages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
             
-                for (let image of product.productimages) {
+                for (let image of product.productImages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
