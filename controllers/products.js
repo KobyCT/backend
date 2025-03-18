@@ -233,6 +233,10 @@ exports.createProduct = async (req, res, next) => {
         const verifyFiles = req.files.verifyImages || [];
         const productFiles = req.files.productImages || [];
 
+        console.log(verifyFiles);
+        console.log(productFiles);
+
+
         let verifyImageNames = [];
         let productImageNames = [];
 
