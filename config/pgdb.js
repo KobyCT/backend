@@ -40,6 +40,7 @@ createUsersTable();
 async function createProductsTable() {
     try {
         const query = `
+        DROP TABLE products CASCADE;
         CREATE TABLE IF NOT EXISTS products (
             id SERIAL PRIMARY KEY,
             sellerId VARCHAR(255) NOT NULL,
@@ -232,48 +233,6 @@ async function createHistoryTable() {
     }  
 }
 createHistoryTable();
-
-async function createVerifyImageTable() {
-    try {
-        const query = `
-        CREATE TABLE IF NOT EXISTS verifyimage(
-            productId INTEGER REFERENCES products(id),
-            imageName1 VARCHAR(255),
-            imageName2 VARCHAR(255),
-            imageName3 VARCHAR(255),
-            uploadeTime TIMESTAMP DEFAULT now()
-        );
-        `;
-
-        await connection.query(query);
-        console.log('VerifyImage table created');
-    }catch(err){
-        console.error(err);
-        console.error('VerifyImage table creation failed');
-    }  
-}
-createVerifyImageTable();
-
-async function createProductImageTable() {
-    try {
-        const query = `
-        CREATE TABLE IF NOT EXISTS productimage(
-            productId INTEGER REFERENCES products(id),
-            imageName1 VARCHAR(255),
-            imageName2 VARCHAR(255),
-            imageName3 VARCHAR(255),
-            uploadeTime TIMESTAMP DEFAULT now()
-        );
-        `;
-
-        await connection.query(query);
-        console.log('ProductImage table created');
-    }catch(err){
-        console.error(err);
-        console.error('ProductImage table creation failed');
-    }  
-}
-createProductImageTable();
 
 async function createIndex() {
     try {

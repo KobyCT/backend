@@ -94,13 +94,11 @@ exports.getProducts = async (req, res, next) => {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
             
-                // Retrieve signed URLs for verifyImages
                 for (let image of product.verifyImages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
             
-                // Retrieve signed URLs for productImages
                 for (let image of product.productImages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
@@ -182,7 +180,7 @@ exports.getMyProducts = async (req, res, next) => {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
-                
+
                 for (let image of product.productImages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
