@@ -1,11 +1,14 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const cors = require('cors');
 const cookieParser=require('cookie-parser');
 const app = express();
 
 dotenv.config({path:'./config/config.env'});
 
 app.use(express.json());
+
+app.use(cors());
 
 //Cookie parser
 app.use(cookieParser());
@@ -21,6 +24,9 @@ app.use('/api/cart', carts);
 
 const chats = require('./routes/chats');
 app.use('/api/chats', chats);
+
+const messages = require('./routes/message');
+app.use('/api/messages', messages);
 
 const blacklist = require('./routes/blacklists');
 app.use('/api/blacklist', blacklist);

@@ -1,4 +1,5 @@
 const sql = require('../config/pgdb');
+const { query } = require('./chat');
 
 const Message = function(message){
     this.chatId = message.chatId;
@@ -7,11 +8,13 @@ const Message = function(message){
 };
 
 Message.getMessage = (chatId,result)=>{
-    query = `SELECT * FROM messages WHERE chatId = ${chatId};`;
+    const query = `SELECT * FROM messages WHERE chatId = ${chatId};`;
+
+    console.log(query);
 
     sql.query(query, (err, res)=>{
         if(err) {
-            console.log('create error: ',err);
+            console.log('get message error: ',err);
             result(err,null);
             return;
         }
@@ -32,7 +35,7 @@ Message.createMessage = (newMessage,result)=>{
 
     sql.query(query, (err, res)=>{
         if(err) {
-            console.log('create error: ',err);
+            console.log('create message error: ',err);
             result(err,null);
             return;
         }

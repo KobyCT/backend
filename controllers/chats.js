@@ -50,7 +50,7 @@ exports.createChat = async (req, res, next) => {
 };
 
 exports.getChats = async (req,res,next) => {
-    Chat.getChat(req.user.uid,(err,data)=>{
+    Chat.getChat(req.params.id,(err,data)=>{
         if(err) res.status(400).json(err);
         res.status(200).json(data);
     });

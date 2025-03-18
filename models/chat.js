@@ -12,7 +12,7 @@ Chat.getChat = (userId,result)=>{
 
     sql.query(query, (err, res)=>{
         if(err) {
-            console.log('create error: ',err);
+            console.log('get chat error: ',err);
             result(err,null);
             return;
         }
@@ -32,7 +32,7 @@ Chat.createChat = (newChat,result) =>{
 
     sql.query(query, [members, productId, quantity], (err, res)=>{
         if(err) {
-            console.log('create error: ',err);
+            console.log('create chat error: ',err);
             result(err,null);
             return;
         }

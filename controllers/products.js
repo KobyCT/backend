@@ -91,8 +91,8 @@ exports.getProducts = async (req, res, next) => {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
             for (let product of data) {
-                product.imageUrl = await getObjectSignedUrl(product.imageName)
-              }
+                product.imageUrl = await getObjectSignedUrl(product.imagename)
+            }
             res.status(200).json(data);
         }
     });
@@ -102,10 +102,13 @@ exports.getProducts = async (req, res, next) => {
 exports.getUnApproveProducts = async (req, res, next) => {
     const query = `SELECT * FROM products WHERE isApprove = false ORDER BY id ASC`;
     
-    Product.query(query, (err, data) => {
+    Product.query(query,async (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
+            for (let product of data) {
+                product.imageUrl = await getObjectSignedUrl(product.imagename)
+            }
             res.status(200).json(data);
         }
     });
@@ -142,10 +145,13 @@ exports.unApproveProducts = async (req, res, next) => {
 
 exports.getMyProducts = async (req, res, next) => {
     const query = `SELECT * FROM products WHERE sellerId = ${req.user.uid}`;
-    Product.query(query, (err, data) => {
+    Product.query(query, async (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
+            for (let product of data) {
+                product.imageUrl = await getObjectSignedUrl(product.imagename)
+            }
             res.status(200).json(data);
         }
     });

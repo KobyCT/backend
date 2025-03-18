@@ -27,9 +27,11 @@ exports.createMessage = async (req,res,next) =>{
             
             const message = new Message({
                 chatId: req.body.chatId,
-                senderId: req.user.uid,
+                senderId: req.body.senderId,
                 text:req.body.text
             });
+
+            console.log(message);
 
             Message.createMessage(message,(err,data)=>{
                 if(err) res.status(400).json(err);
