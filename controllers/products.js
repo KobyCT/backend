@@ -91,8 +91,22 @@ exports.getProducts = async (req, res, next) => {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
             for (let product of data) {
-                product.imageUrl = await getObjectSignedUrl(product.imagename)
+                product.verifyImageUrls = []; 
+                product.productImageUrls = []; 
+            
+                // Retrieve signed URLs for verifyImages
+                for (let image of product.verifyImages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.verifyImageUrls.push(url);
+                }
+            
+                // Retrieve signed URLs for productImages
+                for (let image of product.productImages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.productImageUrls.push(url);
+                }
             }
+            
             res.status(200).json(data);
         }
     });
@@ -107,7 +121,18 @@ exports.getUnApproveProducts = async (req, res, next) => {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
             for (let product of data) {
-                product.imageUrl = await getObjectSignedUrl(product.imagename)
+                product.verifyImageUrls = []; 
+                product.productImageUrls = []; 
+            
+                for (let image of product.verifyImages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.verifyImageUrls.push(url);
+                }
+            
+                for (let image of product.productImages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.productImageUrls.push(url);
+                }
             }
             res.status(200).json(data);
         }
@@ -150,7 +175,18 @@ exports.getMyProducts = async (req, res, next) => {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
             for (let product of data) {
-                product.imageUrl = await getObjectSignedUrl(product.imagename)
+                product.verifyImageUrls = []; 
+                product.productImageUrls = []; 
+            
+                for (let image of product.verifyImages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.verifyImageUrls.push(url);
+                }
+                
+                for (let image of product.productImages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.productImageUrls.push(url);
+                }
             }
             res.status(200).json(data);
         }
@@ -194,17 +230,33 @@ exports.createProduct = async (req, res, next) => {
             seller = req.body.sellerId;
         }
 
-        let open = req.body.isOpen || false;
+        let open = req.body.isOpen === "true";
 
-        const file = req.file;
-        const imageName = generateFileName();
+        const verifyFiles = req.files.verifyImages || [];
+        const productFiles = req.files.productImages || [];
 
-        //upload file to s3
-        const fileBuffer = await sharp(file.buffer)
-            .resize({ height: 1920, width: 1080, fit: "contain" })
-            .toBuffer()
+        let verifyImageNames = [];
+        let productImageNames = [];
 
-        await uploadFile(fileBuffer, imageName, file.mimetype)
+        for (const file of verifyFiles) {
+            const imageName = generateFileName();
+            const fileBuffer = await sharp(file.buffer)
+                .resize({ height: 1920, width: 1080, fit: "contain" })
+                .toBuffer();
+
+            await uploadFile(fileBuffer, imageName, file.mimetype);
+            verifyImageNames.push(imageName);
+        }
+
+        for (const file of productFiles) {
+            const imageName = generateFileName();
+            const fileBuffer = await sharp(file.buffer)
+                .resize({ height: 1920, width: 1080, fit: "contain" })
+                .toBuffer();
+
+            await uploadFile(fileBuffer, imageName, file.mimetype);
+            productImageNames.push(imageName);
+        }
 
         const product = {
             name: req.body.name?.trim() || '',
@@ -223,7 +275,8 @@ exports.createProduct = async (req, res, next) => {
             shippingCost: parseFloat(req.body.shippingCost) || 0,
             isApprove: false,
             isOpen: open,
-            imageName: imageName,
+            verifyImages: verifyImageNames, 
+            productImages: productImageNames, 
         };
 
         console.log(product);
@@ -239,6 +292,7 @@ exports.createProduct = async (req, res, next) => {
         res.status(500).json({ success: false, message: 'Server error', error });
     }
 };
+
 
 
 

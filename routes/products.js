@@ -10,7 +10,10 @@ const {protect,authorize} = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.route('/').get(protect,authorize('admin','acceptuser'),getProducts).post(protect,authorize('admin','acceptuser'), upload.single('image'), createProduct);
+router.route('/').get(protect,authorize('admin','acceptuser'),getProducts).post(protect,authorize('admin','acceptuser'),  upload.fields([
+    { name: "verifyImages", maxCount: 3 },
+    { name: "productImages", maxCount: 3 }
+]), createProduct);
 router.route('/approve/:id').get(protect,authorize('admin'),approveProducts);
 router.route('/unapprove/:id').get(protect,authorize('admin'),unApproveProducts);
 router.route('/approve').get(protect,authorize('admin'),getUnApproveProducts);

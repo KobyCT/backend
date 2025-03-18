@@ -58,7 +58,8 @@ async function createProductsTable() {
             shippingCost NUMERIC(10,2),
             isApprove BOOLEAN,
             isOpen BOOLEAN,
-            imageName VARCHAR(255),
+            verifyImages TEXT[],
+            productImages TEXT[],
             createTime BIGINT DEFAULT EXTRACT(EPOCH FROM now()), 
             FOREIGN KEY (sellerId) REFERENCES users(uid)
         );
@@ -231,6 +232,48 @@ async function createHistoryTable() {
     }  
 }
 createHistoryTable();
+
+async function createVerifyImageTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS verifyimage(
+            productId INTEGER REFERENCES products(id),
+            imageName1 VARCHAR(255),
+            imageName2 VARCHAR(255),
+            imageName3 VARCHAR(255),
+            uploadeTime TIMESTAMP DEFAULT now()
+        );
+        `;
+
+        await connection.query(query);
+        console.log('VerifyImage table created');
+    }catch(err){
+        console.error(err);
+        console.error('VerifyImage table creation failed');
+    }  
+}
+createVerifyImageTable();
+
+async function createProductImageTable() {
+    try {
+        const query = `
+        CREATE TABLE IF NOT EXISTS productimage(
+            productId INTEGER REFERENCES products(id),
+            imageName1 VARCHAR(255),
+            imageName2 VARCHAR(255),
+            imageName3 VARCHAR(255),
+            uploadeTime TIMESTAMP DEFAULT now()
+        );
+        `;
+
+        await connection.query(query);
+        console.log('ProductImage table created');
+    }catch(err){
+        console.error(err);
+        console.error('ProductImage table creation failed');
+    }  
+}
+createProductImageTable();
 
 async function createIndex() {
     try {

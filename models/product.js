@@ -18,7 +18,8 @@ const Product = function(product){
     this.shippingCost = product.shippingCost;
     this.isApprove = product.isApprove;
     this.isOpen = product.isOpen;
-    this.imageName = product.imageName;
+    this.verifyImages = product.verifyImages;
+    this.productImages = product.productImages;
 };
 
 
