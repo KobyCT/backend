@@ -230,8 +230,8 @@ exports.createProduct = async (req, res, next) => {
 
         let open = req.body.isOpen === "true";
 
-        const verifyFiles = req.files.verifyImages || [];
-        const productFiles = req.files.productImages || [];
+        const verifyFiles = req.verifyImages || [];
+        const productFiles = req.productImages || [];
 
         console.log(verifyFiles);
         console.log(productFiles);
