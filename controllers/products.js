@@ -137,17 +137,19 @@ exports.getProduct = async (req,res, next)=>{
             console.log(err);
             return res.status(400).json({success:false,message:err.message})
         }
-            data.verifyImageUrls = []; 
-            data.productImageUrls = []; 
-        
-            for (let image of data.verifyimages) {
+        for (let product of data) {
+            product.verifyImageUrls = []; 
+            product.productImageUrls = []; 
+
+            
+            for (let image of product.verifyimages) {
                 const url = await getObjectSignedUrl(image);
-                data.verifyImageUrls.push(url);
+                product.verifyImageUrls.push(url);
             }
-        
-            for (let image of data.productimages) {
+            
+            for (let image of product.productimages) {
                 const url = await getObjectSignedUrl(image);
-                data.productImageUrls.push(url);
+                product.productImageUrls.push(url);
             }
 
             const user = await new Promise((resolve, reject) => {
@@ -160,6 +162,7 @@ exports.getProduct = async (req,res, next)=>{
             product.sellerFirstNameEN = user.firstnameen;
             product.sellerLastNameTH = user.lastnameth;
             product.sellerLastNameEN = user.lastnameen;
+        }
         res.status(200).json({success:true,data:data})
     });
 }
