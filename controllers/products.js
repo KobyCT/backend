@@ -92,49 +92,54 @@ exports.getProducts = async (req, res, next) => {
         if (err) {
             return res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
-            for (let product of data) {
-                product.verifyImageUrls = []; 
-                product.productImageUrls = []; 
+            try{
 
-                
-                for (let image of product.verifyimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.verifyImageUrls.push(url);
-                }
-                
-                for (let image of product.productimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.productImageUrls.push(url);
-                }
-
-                product.productimages = []; 
-                product.verifyimages = []; 
-
-                const user = await new Promise((resolve, reject) => {
-                    User.findById(product.sellerid,(err,user)=> {
-                        if(err) reject(res.status(400).json({success:false,message:err}))
-                        resolve(user)
+                for (let product of data) {
+                    product.verifyImageUrls = []; 
+                    product.productImageUrls = []; 
+    
+                    
+                    for (let image of product.verifyimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.verifyImageUrls.push(url);
+                    }
+                    
+                    for (let image of product.productimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.productImageUrls.push(url);
+                    }
+    
+                    product.productimages = []; 
+                    product.verifyimages = []; 
+    
+                    const user = await new Promise((resolve, reject) => {
+                        User.findById(product.sellerid,(err,user)=> {
+                            if(err) reject(res.status(400).json({success:false,message:err}))
+                            resolve(user)
+                        });
                     });
-                });
-                
-                product.sellerFirstNameTH = user.firstnameth;
-                product.sellerFirstNameEN = user.firstnameen;
-                product.sellerLastNameTH = user.lastnameth;
-                product.sellerLastNameEN = user.lastnameen;
-
-                const tag = await new Promise((resolve, reject) => {
-                    Tag.getThisProductTag(product.id,(err,producttag)=>{
-                        if(err) reject(res.status(400).json({success:false,message:err}))
-                            resolve(producttag)
+                    
+                    product.sellerFirstNameTH = user.firstnameth;
+                    product.sellerFirstNameEN = user.firstnameen;
+                    product.sellerLastNameTH = user.lastnameth;
+                    product.sellerLastNameEN = user.lastnameen;
+    
+                    const tag = await new Promise((resolve, reject) => {
+                        Tag.getThisProductTag(product.id,(err,producttag)=>{
+                            if(err) reject(err)
+                                resolve(producttag)
+                        });
                     });
-                });
-                product.tag = []; 
-                
-                for (let eachtag of tag) {
-                    product.tag.push(eachtag.tag);
+                    product.tag = []; 
+                    
+                    for (let eachtag of tag) {
+                        product.tag.push(eachtag.tag);
+                    }
                 }
+                res.status(200).json(data);
+            }catch(error){
+                res.status(400).json({success:false,message:err})
             }
-            res.status(200).json(data);
         }
     });
 };
@@ -153,64 +158,12 @@ exports.getProduct = async (req,res, next)=>{
             console.log(err);
             return res.status(400).json({success:false,message:err.message})
         }
-        for (let product of data) {
-            product.verifyImageUrls = []; 
-            product.productImageUrls = []; 
+        try{
 
-            
-            for (let image of product.verifyimages) {
-                const url = await getObjectSignedUrl(image);
-                product.verifyImageUrls.push(url);
-            }
-            
-            for (let image of product.productimages) {
-                const url = await getObjectSignedUrl(image);
-                product.productImageUrls.push(url);
-            }
-
-            product.productimages = []; 
-            product.verifyimages = []; 
-
-            const user = await new Promise((resolve, reject) => {
-                User.findById(product.sellerid,(err,user)=> {
-                    if(err) reject(res.status(400).json({success:false,message:err}))
-                    resolve(user)
-                });
-            });
-            
-            product.sellerFirstNameTH = user.firstnameth;
-            product.sellerFirstNameEN = user.firstnameen;
-            product.sellerLastNameTH = user.lastnameth;
-            product.sellerLastNameEN = user.lastnameen;
-
-            const tag = await new Promise((resolve, reject) => {
-                Tag.getThisProductTag(product.id,(err,producttag)=>{
-                    if(err) reject(res.status(400).json({success:false,message:err}))
-                        resolve(producttag)
-                });
-            });
-            product.tag = []; 
-            
-            for (let eachtag of tag) {
-                product.tag.push(eachtag.tag);
-            }
-        }
-        res.status(200).json({success:true,data:data})
-    });
-}
-
-
-exports.getUnApproveProducts = async (req, res, next) => {
-    const query = `SELECT * FROM products WHERE isApprove = false ORDER BY id ASC`;
-    
-    Product.query(query,async (err, data) => {
-        if (err) {
-            res.status(500).send({ message: err.message || 'Error retrieving products' });
-        } else {
             for (let product of data) {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
-
+    
                 
                 for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
@@ -221,10 +174,10 @@ exports.getUnApproveProducts = async (req, res, next) => {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
-
+    
                 product.productimages = []; 
                 product.verifyimages = []; 
-
+    
                 const user = await new Promise((resolve, reject) => {
                     User.findById(product.sellerid,(err,user)=> {
                         if(err) reject(res.status(400).json({success:false,message:err}))
@@ -236,10 +189,10 @@ exports.getUnApproveProducts = async (req, res, next) => {
                 product.sellerFirstNameEN = user.firstnameen;
                 product.sellerLastNameTH = user.lastnameth;
                 product.sellerLastNameEN = user.lastnameen;
-
+    
                 const tag = await new Promise((resolve, reject) => {
                     Tag.getThisProductTag(product.id,(err,producttag)=>{
-                        if(err) reject(res.status(400).json({success:false,message:err}))
+                        if(err) reject(err)
                             resolve(producttag)
                     });
                 });
@@ -249,7 +202,71 @@ exports.getUnApproveProducts = async (req, res, next) => {
                     product.tag.push(eachtag.tag);
                 }
             }
-            res.status(200).json(data);
+            res.status(200).json({success:true,data:data})
+        }catch(error){
+            res.status(400).json({success:false,message:err})
+        }
+    });
+}
+
+
+exports.getUnApproveProducts = async (req, res, next) => {
+    const query = `SELECT * FROM products WHERE isApprove = false ORDER BY id ASC`;
+    
+    Product.query(query,async (err, data) => {
+        if (err) {
+            res.status(500).send({ message: err.message || 'Error retrieving products' });
+        } else {
+            try{
+
+                for (let product of data) {
+                    product.verifyImageUrls = []; 
+                    product.productImageUrls = []; 
+    
+                    
+                    for (let image of product.verifyimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.verifyImageUrls.push(url);
+                    }
+                    
+                    for (let image of product.productimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.productImageUrls.push(url);
+                    }
+    
+                    product.productimages = []; 
+                    product.verifyimages = []; 
+
+                    const [user, tag] = await Promise.all([
+                        new Promise((resolve, reject) => {
+                            User.findById(product.sellerid, (err, user) => {
+                                if (err) return reject(err);
+                                resolve(user);
+                            });
+                        }),
+                        new Promise((resolve, reject) => {
+                            Tag.getThisProductTag(product.id, (err, producttag) => {
+                                if (err) return reject(err);
+                                resolve(producttag);
+                            });
+                        })
+                    ]);
+                    
+                    product.sellerFirstNameTH = user.firstnameth;
+                    product.sellerFirstNameEN = user.firstnameen;
+                    product.sellerLastNameTH = user.lastnameth;
+                    product.sellerLastNameEN = user.lastnameen;
+    
+                    product.tag = []; 
+                    
+                    for (let eachtag of tag) {
+                        product.tag.push(eachtag.tag);
+                    }
+                }
+                res.status(200).json(data);
+            }catch(error){
+                res.status(400).json({success:false,message:err});
+            }
         }
     });
 };
@@ -353,35 +370,40 @@ exports.getRecommendProducts = async (req,res,next) => {
         if(err)
             res.status(500).send({message: err.message || 'Some error occurred while retrieving Recommend Products'});
         else {
-            for (let product of data) {
-                product.verifyImageUrls = []; 
-                product.productImageUrls = []; 
-
-                
-                for (let image of product.verifyimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.verifyImageUrls.push(url);
-                }
-                
-                for (let image of product.productimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.productImageUrls.push(url);
-                }
-
-                const user = await new Promise((resolve, reject) => {
-                    User.findById(product.sellerid,(err,user)=> {
-                        if(err) reject(res.status(400).json({success:false,message:err}))
-                        resolve(user)
+            try{
+                for (let product of data) {
+                    product.verifyImageUrls = []; 
+                    product.productImageUrls = []; 
+    
+                    
+                    for (let image of product.verifyimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.verifyImageUrls.push(url);
+                    }
+                    
+                    for (let image of product.productimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.productImageUrls.push(url);
+                    }
+    
+                    const user = await new Promise((resolve, reject) => {
+                        User.findById(product.sellerid,(err,user)=> {
+                            if(err) reject(err)
+                            resolve(user)
+                        });
                     });
-                });
-                product.sellerFirstNameTH = user.firstnameth;
-                product.sellerFirstNameEN = user.firstnameen;
-                product.sellerLastNameTH = user.lastnameth;
-                product.sellerLastNameEN = user.lastnameen;
+                    product.sellerFirstNameTH = user.firstnameth;
+                    product.sellerFirstNameEN = user.firstnameen;
+                    product.sellerLastNameTH = user.lastnameth;
+                    product.sellerLastNameEN = user.lastnameen;
+                }
+                res.status(200).json(data);
+
+            }catch(err){
+                res.status(400).json({success:false,message:err})
             }
 
 
-            res.status(200).json(data);
         }
     });
 };
@@ -514,7 +536,25 @@ exports.updateProduct = (req, res) => {
     });
 };
 
-exports.deleteProduct = (req,res) => {
+exports.deleteProduct = async (req,res) => {
+    const deleteQuery = `SELECT * FROM products WHERE id = ${req.params.id}`;
+    const deleteProduct = await new Promise((resolve, reject) => {
+        Product.query(deleteQuery,(err,user)=> {
+            if(err) reject(res.status(400).json({success:false,message:err}))
+            resolve(user)
+        });
+    });
+
+    for (let product of deleteProduct) {
+        for (let image of product.verifyimages) {
+            await deleteFile(image);
+        }
+        
+        for (let image of product.productimages) {
+            await deleteFile(image);
+        }
+    }
+
     Product.remove(req.params.id, async (err,data)=>{
         if(err) {
             if(err.kind === 'not_found') {
