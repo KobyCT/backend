@@ -105,15 +105,13 @@ exports.getProducts = async (req, res, next) => {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
-            }
 
-            for (let product of data) {
                 await User.findById(product.sellerid,(err,user)=> {
                     if(err) return res.status(400).json({success:false,message:err})
-                    product.sellerFirstNameTH = user.firstnameth
-                    product.sellerFirstNameEN = user.firstnameen
-                    product.sellerLastNameTH = user.lastnameth
-                    product.sellerLastNameEN = user.lastnameen
+                    product.sellerFirstNameTH = user.firstnameth;
+                    product.sellerFirstNameEN = user.firstnameen;
+                    product.sellerLastNameTH = user.lastnameth;
+                    product.sellerLastNameEN = user.lastnameen;
                });
             }
             
@@ -131,11 +129,31 @@ exports.getProduct = async (req,res, next)=>{
 
     const query = `SELECT * FROM products WHERE id = ${productId}`
 
-    Product.query(query,(err,data)=>{
+    Product.query(query,async (err,data)=>{
         if(err) {
             console.log(err);
             return res.status(400).json({success:false,message:err.message})
         }
+            data.verifyImageUrls = []; 
+            data.productImageUrls = []; 
+        
+            for (let image of data.verifyimages) {
+                const url = await getObjectSignedUrl(image);
+                data.verifyImageUrls.push(url);
+            }
+        
+            for (let image of data.productimages) {
+                const url = await getObjectSignedUrl(image);
+                data.productImageUrls.push(url);
+            }
+
+            await User.findById(data.sellerid,(err,user)=> {
+                if(err) return res.status(400).json({success:false,message:err})
+                    data.sellerFirstNameTH = user.firstnameth;
+                    data.sellerFirstNameEN = user.firstnameen;
+                    data.sellerLastNameTH = user.lastnameth;
+                    data.sellerLastNameEN = user.lastnameen;
+           });
         res.status(200).json({success:true,data:data})
     });
 }
