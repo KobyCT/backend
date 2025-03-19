@@ -90,31 +90,34 @@ exports.getProducts = async (req, res, next) => {
 
     Product.query(query, async (err, data) => {
         if (err) {
-            res.status(500).send({ message: err.message || 'Error retrieving products' });
+            return res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
             for (let product of data) {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
-            
+
+                
                 for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
-            
+                
                 for (let image of product.productimages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
 
-                await User.findById(product.sellerid,(err,user)=> {
-                    if(err) return res.status(400).json({success:false,message:err})
-                    product.sellerFirstNameTH = user.firstnameth;
-                    product.sellerFirstNameEN = user.firstnameen;
-                    product.sellerLastNameTH = user.lastnameth;
-                    product.sellerLastNameEN = user.lastnameen;
-               });
+                const user = await new Promise((resolve, reject) => {
+                    User.findById(product.sellerid,(err,user)=> {
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                        resolve(user)
+                    });
+                });
+                product.sellerFirstNameTH = user.firstnameth;
+                product.sellerFirstNameEN = user.firstnameen;
+                product.sellerLastNameTH = user.lastnameth;
+                product.sellerLastNameEN = user.lastnameen;
             }
-            
             res.status(200).json(data);
         }
     });
@@ -147,13 +150,16 @@ exports.getProduct = async (req,res, next)=>{
                 data.productImageUrls.push(url);
             }
 
-            await User.findById(data.sellerid,(err,user)=> {
-                if(err) return res.status(400).json({success:false,message:err})
-                    data.sellerFirstNameTH = user.firstnameth;
-                    data.sellerFirstNameEN = user.firstnameen;
-                    data.sellerLastNameTH = user.lastnameth;
-                    data.sellerLastNameEN = user.lastnameen;
-           });
+            const user = await new Promise((resolve, reject) => {
+                User.findById(product.sellerid,(err,user)=> {
+                    if(err) reject(res.status(400).json({success:false,message:err}))
+                    resolve(user)
+                });
+            });
+            product.sellerFirstNameTH = user.firstnameth;
+            product.sellerFirstNameEN = user.firstnameen;
+            product.sellerLastNameTH = user.lastnameth;
+            product.sellerLastNameEN = user.lastnameen;
         res.status(200).json({success:true,data:data})
     });
 }
