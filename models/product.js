@@ -185,7 +185,7 @@ Product.updateById = async (id, product, result) => {
 
 Product.remove = (id,result) => {
     const query = `
-    DELETE FROM type WHERE productid = ${id};
+    DELETE FROM tags WHERE productid = ${id};
     DELETE FROM cart WHERE productid = ${id};
     DELETE FROM products WHERE id = ${id} RETURNING *;`;
 
@@ -199,8 +199,6 @@ Product.remove = (id,result) => {
             result({kind:'not_found'},null);
             return;
         }
-
-        console.log('delete product with id: ', id);
         result(null, res.rows);
     });
 };

@@ -284,52 +284,64 @@ exports.unApproveProducts = async (req, res, next) => {
 
 
 exports.getMyProducts = async (req, res, next) => {
-    const query = `SELECT * FROM products WHERE sellerId = ${req.user.uid}`;
+    
+    let isApprove = ` `;
+
+    if(req.query.a){
+        isApprove = ` isApprove = ${req.query.a} AND `;
+    }
+    console.log(isApprove);
+
+    const query = `SELECT * FROM products WHERE ${isApprove} sellerId = '${req.user.uid}';`;
     Product.query(query, async (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
-            for (let product of data) {
-                product.verifyImageUrls = []; 
-                product.productImageUrls = []; 
-
-                
-                for (let image of product.verifyimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.verifyImageUrls.push(url);
-                }
-                
-                for (let image of product.productimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.productImageUrls.push(url);
-                }
-
-                product.productimages = []; 
-                product.verifyimages = []; 
-
-                const user = await new Promise((resolve, reject) => {
-                    User.findById(product.sellerid,(err,user)=> {
-                        if(err) reject(res.status(400).json({success:false,message:err}))
-                        resolve(user)
+            try{
+                for (let product of data) {
+                    product.verifyImageUrls = []; 
+                    product.productImageUrls = []; 
+    
+                    
+                    for (let image of product.verifyimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.verifyImageUrls.push(url);
+                    }
+                    
+                    for (let image of product.productimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.productImageUrls.push(url);
+                    }
+    
+                    product.verifyimages = []; 
+                    product.productimages = []; 
+    
+                    const user = await new Promise((resolve, reject) => {
+                        User.findById(product.sellerid,(err,user)=> {
+                            if(err) reject(err)
+                            resolve(user)
+                        });
                     });
-                });
-                
-                product.sellerFirstNameTH = user.firstnameth;
-                product.sellerFirstNameEN = user.firstnameen;
-                product.sellerLastNameTH = user.lastnameth;
-                product.sellerLastNameEN = user.lastnameen;
-
-                const tag = await new Promise((resolve, reject) => {
-                    Tag.getThisProductTag(product.id,(err,producttag)=>{
-                        if(err) reject(res.status(400).json({success:false,message:err}))
-                            resolve(producttag)
+                    
+                    product.sellerFirstNameTH = user.firstnameth;
+                    product.sellerFirstNameEN = user.firstnameen;
+                    product.sellerLastNameTH = user.lastnameth;
+                    product.sellerLastNameEN = user.lastnameen;
+    
+                    const tag = await new Promise((resolve, reject) => {
+                        Tag.getThisProductTag(product.id,(err,producttag)=>{
+                            if(err) reject(res.status(400).json({success:false,message:err}))
+                                resolve(producttag)
+                        });
                     });
-                });
-                product.tag = []; 
-                
-                for (let eachtag of tag) {
-                    product.tag.push(eachtag.tag);
+                    product.tag = []; 
+                    
+                    for (let eachtag of tag) {
+                        product.tag.push(eachtag.tag);
+                    }
                 }
+            }catch(error){
+                res.status(400).json({success:false,message:err})
             }
             res.status(200).json(data);
         }
@@ -515,7 +527,6 @@ exports.deleteProduct = (req,res) => {
                 });
             }
         } else {
-            await deleteFile(data.imageName);
             res.status(200).json({
                 success: true,
                 data: data
