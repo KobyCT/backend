@@ -109,11 +109,11 @@ exports.getProducts = async (req, res, next) => {
 
             for (let product of data) {
                 await User.findById(product.sellerid,(err,user)=> {
-                    if(err) return res.status(400).json({success:false,message:err.message})
-                    product.sellerFirstNameTH = user.data.firstnameth
-                    product.sellerFirstNameEN = user.data.firstnameen
-                    product.sellerLastNameTH = user.data.lastnameth
-                    product.sellerLastNameEN = user.data.lastnameen
+                    if(err) return res.status(400).json({success:false,message:err})
+                    product.sellerFirstNameTH = user.firstnameth
+                    product.sellerFirstNameEN = user.firstnameen
+                    product.sellerLastNameTH = user.lastnameth
+                    product.sellerLastNameEN = user.lastnameen
                });
             }
             
