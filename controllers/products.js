@@ -263,10 +263,10 @@ exports.getUnApproveProducts = async (req, res, next) => {
                         product.tag.push(eachtag.tag);
                     }
                 }
-                res.status(200).json(data);
             }catch(error){
-                res.status(400).json({success:false,message:err});
+                console.error(`Error processing product :`, error);
             }
+            res.status(200).json(data);
         }
     });
 };
@@ -397,12 +397,12 @@ exports.getRecommendProducts = async (req,res,next) => {
                     product.sellerLastNameTH = user.lastnameth;
                     product.sellerLastNameEN = user.lastnameen;
                 }
-                res.status(200).json(data);
-
+                
             }catch(err){
                 res.status(400).json({success:false,message:err})
             }
-
+            
+            res.status(200).json(data);
 
         }
     });
