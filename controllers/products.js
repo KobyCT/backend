@@ -1,4 +1,5 @@
 const {Product,Tag} = require('../models/product');
+const User = require('../models/user.js');
 const { uploadFile , deleteFile , getObjectSignedUrl}= require('./s3.js');
 const crypto = require('crypto');
 const sharp = require('sharp');
@@ -104,6 +105,16 @@ exports.getProducts = async (req, res, next) => {
                     product.productImageUrls.push(url);
                 }
             }
+
+            for (let product of data) {
+                await User.findById(product.sellerid,(err,user)=> {
+                    if(err) return res.status(400).json({success:false,message:err.message})
+                    product.sellerFirstNameTH = user.data.firstnameth
+                    product.sellerFirstNameEN = user.data.firstnameen
+                    product.sellerLastNameTH = user.data.lastnameth
+                    product.sellerLastNameEN = user.data.lastnameen
+               });
+            }
             
             res.status(200).json(data);
         }
@@ -122,12 +133,12 @@ exports.getUnApproveProducts = async (req, res, next) => {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
             
-                for (let image of product.verifyImages) {
+                for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
             
-                for (let image of product.productImages) {
+                for (let image of product.productimages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
