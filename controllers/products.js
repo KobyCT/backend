@@ -292,6 +292,7 @@ exports.getRecommendProducts = async (req,res,next) => {
                 product.sellerLastNameTH = user.lastnameth;
                 product.sellerLastNameEN = user.lastnameen;
             }
+            
 
             res.status(200).json(data);
         }
@@ -425,7 +426,6 @@ exports.updateProduct = (req, res) => {
         res.status(200).json(data);
     });
 };
-
 
 exports.deleteProduct = (req,res) => {
     Product.remove(req.params.id, async (err,data)=>{
