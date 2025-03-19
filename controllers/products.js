@@ -1,3 +1,4 @@
+const { query } = require('../models/history.js');
 const {Product,Tag} = require('../models/product');
 const User = require('../models/user.js');
 const { uploadFile , deleteFile , getObjectSignedUrl}= require('./s3.js');
@@ -121,6 +122,24 @@ exports.getProducts = async (req, res, next) => {
     });
 };
 
+exports.getProduct = async (req,res, next)=>{
+    const productId = req.params.id
+
+    if(!req.params.id){
+        return res.status(400).json({success:false,massage:'NOt found Product ID'})
+    }
+
+    const query = `SELECT * FROM products WHERE id = ${productId}`
+
+    Product.query(query,(err,data)=>{
+        if(err) {
+            console.log(err);
+            return res.status(400).json({success:false,message:err.message})
+        }
+        res.status(200).json({success:true,data:data})
+    });
+}
+
 
 exports.getUnApproveProducts = async (req, res, next) => {
     const query = `SELECT * FROM products WHERE isApprove = false ORDER BY id ASC`;
@@ -129,20 +148,6 @@ exports.getUnApproveProducts = async (req, res, next) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
-            for (let product of data) {
-                product.verifyImageUrls = []; 
-                product.productImageUrls = []; 
-            
-                for (let image of product.verifyimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.verifyImageUrls.push(url);
-                }
-            
-                for (let image of product.productimages) {
-                    const url = await getObjectSignedUrl(image);
-                    product.productImageUrls.push(url);
-                }
-            }
             res.status(200).json(data);
         }
     });
