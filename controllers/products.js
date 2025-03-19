@@ -172,6 +172,32 @@ exports.getUnApproveProducts = async (req, res, next) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
+            for (let product of data) {
+                product.verifyImageUrls = []; 
+                product.productImageUrls = []; 
+
+                
+                for (let image of product.verifyimages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.verifyImageUrls.push(url);
+                }
+                
+                for (let image of product.productimages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.productImageUrls.push(url);
+                }
+
+                const user = await new Promise((resolve, reject) => {
+                    User.findById(product.sellerid,(err,user)=> {
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                        resolve(user)
+                    });
+                });
+                product.sellerFirstNameTH = user.firstnameth;
+                product.sellerFirstNameEN = user.firstnameen;
+                product.sellerLastNameTH = user.lastnameth;
+                product.sellerLastNameEN = user.lastnameen;
+            }
             res.status(200).json(data);
         }
     });
@@ -215,12 +241,13 @@ exports.getMyProducts = async (req, res, next) => {
             for (let product of data) {
                 product.verifyImageUrls = []; 
                 product.productImageUrls = []; 
-            
+
+                
                 for (let image of product.verifyimages) {
                     const url = await getObjectSignedUrl(image);
                     product.verifyImageUrls.push(url);
                 }
-            
+                
                 for (let image of product.productimages) {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
@@ -232,10 +259,39 @@ exports.getMyProducts = async (req, res, next) => {
 };
 
 exports.getRecommendProducts = async (req,res,next) => {
-    Product.getSameProductTag(req.params.id,(err, data)=>{
+    Product.getSameProductTag(req.params.id,async (err, data)=>{
         if(err)
             res.status(500).send({message: err.message || 'Some error occurred while retrieving Recommend Products'});
-        else res.status(200).json(data);
+        else {
+            for (let product of data) {
+                product.verifyImageUrls = []; 
+                product.productImageUrls = []; 
+
+                
+                for (let image of product.verifyimages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.verifyImageUrls.push(url);
+                }
+                
+                for (let image of product.productimages) {
+                    const url = await getObjectSignedUrl(image);
+                    product.productImageUrls.push(url);
+                }
+
+                const user = await new Promise((resolve, reject) => {
+                    User.findById(product.sellerid,(err,user)=> {
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                        resolve(user)
+                    });
+                });
+                product.sellerFirstNameTH = user.firstnameth;
+                product.sellerFirstNameEN = user.firstnameen;
+                product.sellerLastNameTH = user.lastnameth;
+                product.sellerLastNameEN = user.lastnameen;
+            }
+
+            res.status(200).json(data);
+        }
     });
 };
 
