@@ -107,16 +107,32 @@ exports.getProducts = async (req, res, next) => {
                     product.productImageUrls.push(url);
                 }
 
+                product.productimages = []; 
+                product.verifyimages = []; 
+
                 const user = await new Promise((resolve, reject) => {
                     User.findById(product.sellerid,(err,user)=> {
                         if(err) reject(res.status(400).json({success:false,message:err}))
                         resolve(user)
                     });
                 });
+                
                 product.sellerFirstNameTH = user.firstnameth;
                 product.sellerFirstNameEN = user.firstnameen;
                 product.sellerLastNameTH = user.lastnameth;
                 product.sellerLastNameEN = user.lastnameen;
+
+                const tag = await new Promise((resolve, reject) => {
+                    Tag.getThisProductTag(product.id,(err,producttag)=>{
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                            resolve(producttag)
+                    });
+                });
+                product.tag = []; 
+                
+                for (let eachtag of tag) {
+                    product.tag.push(eachtag.tag);
+                }
             }
             res.status(200).json(data);
         }
@@ -152,16 +168,32 @@ exports.getProduct = async (req,res, next)=>{
                 product.productImageUrls.push(url);
             }
 
+            product.productimages = []; 
+            product.verifyimages = []; 
+
             const user = await new Promise((resolve, reject) => {
                 User.findById(product.sellerid,(err,user)=> {
                     if(err) reject(res.status(400).json({success:false,message:err}))
                     resolve(user)
                 });
             });
+            
             product.sellerFirstNameTH = user.firstnameth;
             product.sellerFirstNameEN = user.firstnameen;
             product.sellerLastNameTH = user.lastnameth;
             product.sellerLastNameEN = user.lastnameen;
+
+            const tag = await new Promise((resolve, reject) => {
+                Tag.getThisProductTag(product.id,(err,producttag)=>{
+                    if(err) reject(res.status(400).json({success:false,message:err}))
+                        resolve(producttag)
+                });
+            });
+            product.tag = []; 
+            
+            for (let eachtag of tag) {
+                product.tag.push(eachtag.tag);
+            }
         }
         res.status(200).json({success:true,data:data})
     });
@@ -190,16 +222,32 @@ exports.getUnApproveProducts = async (req, res, next) => {
                     product.productImageUrls.push(url);
                 }
 
+                product.productimages = []; 
+                product.verifyimages = []; 
+
                 const user = await new Promise((resolve, reject) => {
                     User.findById(product.sellerid,(err,user)=> {
                         if(err) reject(res.status(400).json({success:false,message:err}))
                         resolve(user)
                     });
                 });
+                
                 product.sellerFirstNameTH = user.firstnameth;
                 product.sellerFirstNameEN = user.firstnameen;
                 product.sellerLastNameTH = user.lastnameth;
                 product.sellerLastNameEN = user.lastnameen;
+
+                const tag = await new Promise((resolve, reject) => {
+                    Tag.getThisProductTag(product.id,(err,producttag)=>{
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                            resolve(producttag)
+                    });
+                });
+                product.tag = []; 
+                
+                for (let eachtag of tag) {
+                    product.tag.push(eachtag.tag);
+                }
             }
             res.status(200).json(data);
         }
@@ -255,6 +303,33 @@ exports.getMyProducts = async (req, res, next) => {
                     const url = await getObjectSignedUrl(image);
                     product.productImageUrls.push(url);
                 }
+
+                product.productimages = []; 
+                product.verifyimages = []; 
+
+                const user = await new Promise((resolve, reject) => {
+                    User.findById(product.sellerid,(err,user)=> {
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                        resolve(user)
+                    });
+                });
+                
+                product.sellerFirstNameTH = user.firstnameth;
+                product.sellerFirstNameEN = user.firstnameen;
+                product.sellerLastNameTH = user.lastnameth;
+                product.sellerLastNameEN = user.lastnameen;
+
+                const tag = await new Promise((resolve, reject) => {
+                    Tag.getThisProductTag(product.id,(err,producttag)=>{
+                        if(err) reject(res.status(400).json({success:false,message:err}))
+                            resolve(producttag)
+                    });
+                });
+                product.tag = []; 
+                
+                for (let eachtag of tag) {
+                    product.tag.push(eachtag.tag);
+                }
             }
             res.status(200).json(data);
         }
@@ -292,7 +367,7 @@ exports.getRecommendProducts = async (req,res,next) => {
                 product.sellerLastNameTH = user.lastnameth;
                 product.sellerLastNameEN = user.lastnameen;
             }
-            
+
 
             res.status(200).json(data);
         }
