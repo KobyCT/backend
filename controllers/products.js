@@ -114,7 +114,7 @@ exports.getProducts = async (req, res, next) => {
     
                     const user = await new Promise((resolve, reject) => {
                         User.findById(product.sellerid,(err,user)=> {
-                            if(err) reject(res.status(400).json({success:false,message:err}))
+                            if(err) reject(new Error(err))
                             resolve(user)
                         });
                     });
@@ -126,7 +126,7 @@ exports.getProducts = async (req, res, next) => {
     
                     const tag = await new Promise((resolve, reject) => {
                         Tag.getThisProductTag(product.id,(err,producttag)=>{
-                            if(err) reject(err)
+                            if(err) reject(new Error(err))
                                 resolve(producttag)
                         });
                     });
@@ -180,7 +180,7 @@ exports.getProduct = async (req,res, next)=>{
     
                 const user = await new Promise((resolve, reject) => {
                     User.findById(product.sellerid,(err,user)=> {
-                        if(err) reject(res.status(400).json({success:false,message:err}))
+                        if(err) reject(new Error(err))
                         resolve(user)
                     });
                 });
@@ -240,13 +240,13 @@ exports.getUnApproveProducts = async (req, res, next) => {
                     const [user, tag] = await Promise.all([
                         new Promise((resolve, reject) => {
                             User.findById(product.sellerid, (err, user) => {
-                                if (err) return reject(err);
+                                if (err) return reject(new Error(err));
                                 resolve(user);
                             });
                         }),
                         new Promise((resolve, reject) => {
                             Tag.getThisProductTag(product.id, (err, producttag) => {
-                                if (err) return reject(err);
+                                if (err) return reject(new Error(err));
                                 resolve(producttag);
                             });
                         })
@@ -335,7 +335,7 @@ exports.getMyProducts = async (req, res, next) => {
     
                     const user = await new Promise((resolve, reject) => {
                         User.findById(product.sellerid,(err,user)=> {
-                            if(err) reject(err)
+                            if(err) reject(new Error(err))
                             resolve(user)
                         });
                     });
@@ -347,7 +347,7 @@ exports.getMyProducts = async (req, res, next) => {
     
                     const tag = await new Promise((resolve, reject) => {
                         Tag.getThisProductTag(product.id,(err,producttag)=>{
-                            if(err) reject(res.status(400).json({success:false,message:err}))
+                            if(err) reject(new Error(err))
                                 resolve(producttag)
                         });
                     });
