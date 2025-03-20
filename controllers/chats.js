@@ -26,6 +26,10 @@ exports.createChat = async (req, res, next) => {
 
         const buyerId = req.user.uid;
 
+        if(sellerId == buyerId) {
+            return res.status(400).json({success:false,message:"Seller And Buyer are same id"});
+        }
+
         const chat = new Chat({
             chatId: null,
             members: `{${String(sellerId)},${String(buyerId)}}`,
@@ -55,4 +59,51 @@ exports.getChats = async (req,res,next) => {
         res.status(200).json(data);
     });
 };
+
+exports.deleteChats = async (req, res, next) => {
+    const chatId = req.params.id;
+    const userId = req.user.uid;
+
+    try {
+        if (req.user.role !== "admin") {
+            const checkQuery = `SELECT * FROM chats WHERE chatId = '${chatId}' AND '${userId}' = ANY(members);`;
+
+            const checkResult = await new Promise((resolve, reject) => {
+                Chat.query(checkQuery, (err, rows) => {
+                    if (err) return reject(err);
+                    if (!rows || rows.length === 0) {
+                        return reject({
+                            status: 400,
+                            message: "Not found Chat or you are not a member in this chat",
+                        });
+                    }
+                    resolve(rows);
+                });
+            });
+
+            console.log("Chat found:", checkResult);
+        }
+
+        const deleteQuery = `
+            DELETE FROM messages WHERE chatId = '${chatId}'; 
+            DELETE FROM chats WHERE chatId = '${chatId}' RETURNING *;
+        `;
+
+        const deleteResult = await new Promise((resolve, reject) => {
+            Chat.query(deleteQuery, (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows);
+            });
+        });
+
+        res.status(200).json({ success: true, data: deleteResult });
+
+    } catch (err) {
+        if (err.status) {
+            return res.status(err.status).json({ success: false, message: err.message });
+        }
+        res.status(400).json({ success: false, error: err });
+    }
+};
+
 
