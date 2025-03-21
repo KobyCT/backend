@@ -605,7 +605,7 @@ exports.closeProduct = (req,res) => {
 }
 
 exports.openProduct = (req,res) => {
-    const query = `UPDATE products SET isOpen = false WHERE id = ${req.params.id};`;
+    const query = `UPDATE products SET isOpen = true WHERE id = ${req.params.id};`;
     Product.query(query,(err,data)=>{
         if(err){
             return res.status(400).json({success:false,err:err});

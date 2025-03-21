@@ -37,6 +37,9 @@ app.use('/api/review', reviews);
 const history = require('./routes/history');
 app.use('/api/history', history);
 
+const notification = require('./routes/CUNEXnotification');
+app.use('/api/noti', notification);
+
 const PORT = process.env.PORT || 5000;
 const server = app.listen(
     PORT,
