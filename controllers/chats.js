@@ -60,6 +60,15 @@ exports.getChats = async (req,res,next) => {
     });
 };
 
+exports.getChat = async (req,res,next) => {
+    const query = `SELECT * FROM chats WHERE chatId = '${req.params.id}'`;
+    console.log(req.params.id);
+    Chat.query(query,(err,data)=>{
+        if(err) res.status(400).json(err);
+        res.status(200).json(data);
+    });
+};
+
 exports.deleteChats = async (req, res, next) => {
     const chatId = req.params.id;
     const userId = req.user.uid;
