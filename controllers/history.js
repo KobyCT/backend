@@ -1,4 +1,9 @@
 const History = require('../models/history');
+const { uploadFile , deleteFile , getObjectSignedUrl}= require('./s3.js');
+const crypto = require('crypto');
+const sharp = require('sharp');
+
+const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
 
 exports.getHistory = async (req,res,next) =>{
 
@@ -11,19 +16,28 @@ exports.getHistory = async (req,res,next) =>{
         query = `SELECT * FROM history WHERE buyerId = '${buyerId}'`;
     }
 
-    History.query(query,(err,data)=>{
+    History.query(query, async (err,data)=>{
         if(err){
             res.status(400).json({success:false,msg:err});
             return;
+        }else{
+            try{
+                for (let history of data) {
+                    const url = await getObjectSignedUrl(history.paymenturl);
+                    history.paymentImg = url;
+                }
+                
+                return res.status(200).json({success:true,data:data});
+            }catch(error){
+                return res.status(400).json({success:false,error:error});
+            }
         }
-
-        res.status(200).json({success:true,data:data});
     });
 };
 
 exports.createHistory = async (req,res,next) =>{
-
-    
+    console.log("Uploaded File:", req.file); 
+    console.log("Request Body:", req.body);
     if(!req.body){
         res.status(400).send('Content cannot be empty!');
         return;
@@ -33,12 +47,22 @@ exports.createHistory = async (req,res,next) =>{
     if(req.user.role === 'admin' && req.body.buyerId){
         buyerId = req.body.buyerId;
     }
+
+    const verifyFiles = req.file;
+    
+    const imageName = generateFileName();
+    const fileBuffer = await sharp(verifyFiles.buffer)
+        .resize({ height: 1920, width: 1080, fit: "contain" })
+        .toBuffer();
+    
+    await uploadFile(fileBuffer, imageName, verifyFiles.mimetype);
+    
     
     try{
         const history = new History({
             buyerId : buyerId,
             productId : req.body.productId,
-            paymentURL : req.body.paymentURL,
+            paymentURL : imageName,
             amount : req.body.amount,
             quantity : req.body.quantity
         });
