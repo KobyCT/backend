@@ -81,7 +81,7 @@ exports.getProducts = async (req, res, next) => {
 
     const query = `
         SELECT ${columns} FROM products 
-        WHERE isApprove = true ${tagFilter} ${timeFilter}
+        WHERE isApprove = true AND isOpen = true ${tagFilter} ${timeFilter}
         ORDER BY ${orderBy}
         LIMIT ${limit} OFFSET ${offset};
     `;
@@ -151,7 +151,7 @@ exports.getProduct = async (req,res, next)=>{
         return res.status(400).json({success:false,massage:'NOt found Product ID'})
     }
 
-    const query = `SELECT * FROM products WHERE id = ${productId}`
+    const query = `SELECT * FROM products WHERE id = ${productId} ;`
 
     Product.query(query,async (err,data)=>{
         if(err) {
@@ -413,7 +413,7 @@ exports.search = async (req, res, next) => {
     
     console.log(req.query.q);
     
-    const query = `SELECT * FROM products WHERE name ILIKE '%${search}%'`;
+    const query = `SELECT * FROM products WHERE name ILIKE '%${search}%' AND isOpen = true AND isApprove = true`;
     
     console.log(query);
     Product.query(query, (err, data) => {

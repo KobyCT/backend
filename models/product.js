@@ -224,7 +224,7 @@ Product.getProductCount = async (result) => {
         const totalQuery = `
             SELECT COUNT(*) AS total_products
             FROM products
-            WHERE isApprove = true;
+            WHERE isApprove = true AND isOpen = true;
         `;
         const totalResult = await sql.query(totalQuery);
         const totalProducts = totalResult.rows[0].total_products;
@@ -233,7 +233,7 @@ Product.getProductCount = async (result) => {
             SELECT t.tag, COUNT(p.id) AS product_count
             FROM tags t
             LEFT JOIN products p ON p.id = t.productid
-            WHERE p.isApprove = true
+            WHERE p.isApprove = true AND p.isOpen = true
             GROUP BY t.tag;
         `;
         const tagResult = await sql.query(tagQuery);
