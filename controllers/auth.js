@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Chat = require('../models/chat');
 const jwt=require('jsonwebtoken');
 const axios = require('axios');
 
@@ -121,13 +122,22 @@ exports.getCallback = async (req, res) => {
 //@route    POST /api/v1/auth/me
 //@access   Private
 exports.getMe=async(req,res,next)=>{
-    User.findById(req.user.uid,(err,data)=>{
+    User.findById(req.user.uid,async (err,data)=>{
         if(err){
             res.status(400).json({
                 success:false,
                 message : err
             });
         }else{
+            const user = await new Promise((resolve, reject) => {
+                Chat.count(req.user.uid,(err,count)=>{
+                    if(err){
+                        reject(err);
+                    }
+                    resolve(count);
+                });
+            });
+            data.chatCount = user;
             res.status(200).json({
                 success:true,
                 data:data

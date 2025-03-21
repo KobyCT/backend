@@ -5,10 +5,11 @@ const Chat = function(chat){
     this.members = chat.members;
     this.productId = chat.productId;
     this.quantity = chat.quantity;
+    this.success = chat.success;
 };
 
 Chat.getChat = (userId,result)=>{
-    query = `SELECT * FROM chats WHERE '${userId}' = ANY(members);`;
+    query = `SELECT * FROM chats WHERE '${userId}' = ANY(members) AND success = false;`;
 
     sql.query(query, (err, res)=>{
         if(err) {
@@ -23,14 +24,14 @@ Chat.getChat = (userId,result)=>{
 };
 
 Chat.createChat = (newChat,result) =>{
-    const {members,productId,quantity} = newChat;
+    const {members,productId,quantity,success} = newChat;
 
     const query = `
-  INSERT INTO chats (members, productId, quantity)
-  VALUES ($1, $2, $3) RETURNING *;
+  INSERT INTO chats (members, productId, quantity, success)
+  VALUES ($1, $2, $3, $4) RETURNING *;
 `;
 
-    sql.query(query, [members, productId, quantity], (err, res)=>{
+    sql.query(query, [members, productId, quantity , success], (err, res)=>{
         if(err) {
             console.log('create chat error: ',err);
             result(err,null);
@@ -52,6 +53,20 @@ Chat.query = (query,result) => {
         console.log('All chat');
         console.log(res.rows);
         result(null, res.rows);
+    });
+};
+
+Chat.count = (userId,result) => {
+    const query = `SELECT count(*) as TOTAL FROM chats WHERE '${userId}' = ANY(members) AND success = false; `;
+    sql.query(query,(err,res)=>{
+        if(err){
+            console.log('error: ', err);
+            result(err,null);
+            return;
+        }
+        console.log('All chat');
+        console.log(res.rows[0].total);
+        result(null, res.rows[0].total);
     });
 };
 

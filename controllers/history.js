@@ -150,3 +150,23 @@ exports.deleteHistory = async (req,res,next) =>{
         res.status(400).json({success:false,msg:error});
     }
 };
+
+exports.getWithBuyerProduct = async (req,res,next) => {
+    const buyerId = req.user.uid;
+
+    if(!req.params.id){
+        return res.status(404).json({success:false,message:"ID not found!!"});
+    }
+    const productId = req.params.id;
+
+    const query = `SELECT * FROM history WHERE buyerId = '${buyerId}' AND productId = '${productId}' ;`;
+
+    History.query(query,(err,data)=>{
+        if(err){
+            return res.status(400).json({success:false,err:err});
+        }
+
+        return res.status(200).json({success:true,data:data});
+    });
+
+}

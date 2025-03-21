@@ -437,7 +437,14 @@ exports.createProduct = async (req, res, next) => {
             seller = req.body.sellerId;
         }
 
-        let open = req.body.isOpen === "true";
+        let open;
+
+        if(req.body.isOpen){
+            open = req.body.isOpen === "true";
+        }else{
+            open = true;
+        }
+
 
         const verifyFiles = req.files.verifyImages || [];
         const productFiles = req.files.productImages || [];
@@ -585,3 +592,25 @@ exports.getProductCount = async (req, res) => {
         }
     });
 };
+
+exports.closeProduct = (req,res) => {
+    const query = `UPDATE products SET isOpen = false WHERE id = ${req.params.id};`;
+    Product.query(query,(err,data)=>{
+        if(err){
+            return res.status(400).json({success:false,err:err});
+        }else{
+            return res.status(200).json({success:true,data:data});
+        }
+    });
+}
+
+exports.openProduct = (req,res) => {
+    const query = `UPDATE products SET isOpen = false WHERE id = ${req.params.id};`;
+    Product.query(query,(err,data)=>{
+        if(err){
+            return res.status(400).json({success:false,err:err});
+        }else{
+            return res.status(200).json({success:true,data:data});
+        }
+    });
+}

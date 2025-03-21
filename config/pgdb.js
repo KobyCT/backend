@@ -130,6 +130,7 @@ async function createChatTable() {
             members TEXT[] NOT NULL,
             productId INTEGER,
             quantity NUMERIC,
+            success BOOLEAN,
             createTime TIMESTAMP DEFAULT now(),
             FOREIGN KEY (productId) REFERENCES products(id),
             PRIMARY KEY(chatId)

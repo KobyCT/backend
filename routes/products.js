@@ -4,7 +4,7 @@ const multer = require('multer');
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
-const {getProducts,getProductCount,getProduct,search,getMyProducts,createProduct,updateProduct,getUnApproveProducts,approveProducts,unApproveProducts,deleteProduct,getAllTag,AddTag,getRecommendProducts,deleteTag} = require('../controllers/products');
+const {openProduct,closeProduct,getProducts,getProductCount,getProduct,search,getMyProducts,createProduct,updateProduct,getUnApproveProducts,approveProducts,unApproveProducts,deleteProduct,getAllTag,AddTag,getRecommendProducts,deleteTag} = require('../controllers/products');
 
 const {protect,authorize} = require('../middlewares/auth');
 
@@ -16,6 +16,8 @@ router.route('/').get(protect,authorize('admin','acceptuser'),getProducts).post(
 ]), createProduct);
 router.route('/approve/:id').get(protect,authorize('admin'),approveProducts);
 router.route('/unapprove/:id').get(protect,authorize('admin'),unApproveProducts);
+router.route('/close/:id').get(protect,authorize('admin','acceptuser'),closeProduct);
+router.route('/open/:id').get(protect,authorize('admin','acceptuser'),openProduct);
 router.route('/approve').get(protect,authorize('admin'),getUnApproveProducts);
 router.route('/search').get(protect,authorize('admin','acceptuser'),search);
 router.route('/myproduct').get(protect,authorize('admin','acceptuser'),getMyProducts);

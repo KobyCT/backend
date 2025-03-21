@@ -9,7 +9,7 @@ exports.createChat = async (req, res, next) => {
         const productId = req.body.productId;
 
         const sellerResult = await new Promise((resolve, reject) => {
-            Chat.query(`SELECT sellerId FROM products WHERE id = ${productId}`, (err, data) => {
+            Chat.query(`SELECT sellerId FROM products WHERE id = ${productId};`, (err, data) => {
                 if (err) reject(err);
                 else resolve(data);
             });
@@ -34,7 +34,8 @@ exports.createChat = async (req, res, next) => {
             chatId: null,
             members: `{${String(sellerId)},${String(buyerId)}}`,
             productId: req.body.productId,
-            quantity: req.body.quantity
+            quantity: req.body.quantity,
+            success: false
         });
 
         console.log("chat:", chat);
@@ -61,7 +62,16 @@ exports.getChats = async (req,res,next) => {
 };
 
 exports.getChat = async (req,res,next) => {
-    const query = `SELECT * FROM chats WHERE chatId = '${req.params.id}'`;
+    const query = `SELECT * FROM chats WHERE chatId = '${req.params.id} AND success = false;'`;
+    console.log(req.params.id);
+    Chat.query(query,(err,data)=>{
+        if(err) res.status(400).json(err);
+        res.status(200).json(data);
+    });
+};
+
+exports.successChat = async (req,res,next) => {
+    const query = `UPDATE chats SET success = true WHERE chatId = '${req.params.id}';`;
     console.log(req.params.id);
     Chat.query(query,(err,data)=>{
         if(err) res.status(400).json(err);
