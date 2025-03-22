@@ -416,10 +416,42 @@ exports.search = async (req, res, next) => {
     const query = `SELECT * FROM products WHERE name ILIKE '%${search}%' AND isOpen = true AND isApprove = true`;
     
     console.log(query);
-    Product.query(query, (err, data) => {
+    Product.query(query,async (err, data) => {
         if (err) {
             res.status(500).send({ message: err.message || 'Error retrieving products' });
         } else {
+            try{
+                for (let product of data) {
+                    product.verifyImageUrls = []; 
+                    product.productImageUrls = []; 
+    
+                    
+                    for (let image of product.verifyimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.verifyImageUrls.push(url);
+                    }
+                    
+                    for (let image of product.productimages) {
+                        const url = await getObjectSignedUrl(image);
+                        product.productImageUrls.push(url);
+                    }
+    
+                    const user = await new Promise((resolve, reject) => {
+                        User.findById(product.sellerid,(err,user)=> {
+                            if(err) reject(err)
+                            resolve(user)
+                        });
+                    });
+                    product.sellerFirstNameTH = user.firstnameth;
+                    product.sellerFirstNameEN = user.firstnameen;
+                    product.sellerLastNameTH = user.lastnameth;
+                    product.sellerLastNameEN = user.lastnameen;
+                }
+                
+            }catch(err){
+                res.status(400).json({success:false,message:err})
+            }
+            
             res.status(200).json(data);
         }
     });
