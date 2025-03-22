@@ -29,7 +29,7 @@ exports.sendNotification = async (req, res) => {
 
         console.log("Full API Response:", sendNotification);
         console.log("Received Data from API:", sendNotification.data);
-        res.status(200).json(sendNotification.data);
+        res.status(200).json(sendNotification.data); 
     } catch (error) {
         console.error("API Request Error:", error.response ? error.response.data : error.message);
         res.status(error.response?.status || 500).json({ error: error.response?.data || "Internal Server Error" });

@@ -242,6 +242,15 @@ async function createIndex() {
     CREATE INDEX IF NOT EXISTS idx_products_sellerid ON products (sellerId);
     CREATE INDEX IF NOT EXISTS idx_products_name ON products (name);
     CREATE INDEX IF NOT EXISTS idx_tags_productid_tag ON tags (productid, tag);
+
+    INSERT INTO users (uid, firstNameTH, firstNameEN, lastNameTH, lastNameEN, role)
+    SELECT '0', 'CUrecommerce', 'CUrecommerce', 'CUrecommerce', 'CUrecommerce', 'admin'
+    WHERE NOT EXISTS (SELECT 1 FROM users WHERE uid = '0');
+
+    INSERT INTO products (id, sellerId, name, description, price, quantity, isApprove, isOpen, verifyImages, productImages)
+    SELECT 0, '0', 'Admin', 'Admin', 0, 0, TRUE, FALSE, ARRAY[]::TEXT[], ARRAY[]::TEXT[]
+    WHERE NOT EXISTS (SELECT 1 FROM products WHERE id = 0);
+
         `; 
 
         await connection.query(query);

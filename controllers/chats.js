@@ -54,8 +54,36 @@ exports.createChat = async (req, res, next) => {
     }
 };
 
+exports.createAdminChat = async (req, res, next) => {
+    try {
+        const buyerId = req.user.uid;
+
+        const chat = new Chat({
+            chatId: null,
+            members: `{${String(buyerId)}}`,
+            productId: '0',
+            quantity: '0',
+            success: false
+        });
+
+        console.log("chat:", chat);
+
+        const chatResult = await new Promise((resolve, reject) => {
+            Chat.createChat(chat, (err, data) => {
+                if (err) reject(err);
+                else resolve(data);
+            });
+        });
+
+        res.status(201).json(chatResult);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).json({ success: false, msg: 'Internal Server Error', error: err.message });
+    }
+};
+
 exports.getChats = async (req,res,next) => {
-    Chat.getChat(req.params.id,(err,data)=>{
+    Chat.getChat(req.params.id,req.user.role,(err,data)=>{
         if(err) res.status(400).json(err);
         res.status(200).json(data);
     });
@@ -63,7 +91,6 @@ exports.getChats = async (req,res,next) => {
 
 exports.getChat = async (req,res,next) => {
     const query = `SELECT * FROM chats WHERE chatId = '${req.params.id} AND success = false;'`;
-    console.log(req.params.id);
     Chat.query(query,(err,data)=>{
         if(err) res.status(400).json(err);
         res.status(200).json(data);

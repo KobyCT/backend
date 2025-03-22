@@ -8,8 +8,12 @@ const Chat = function(chat){
     this.success = chat.success;
 };
 
-Chat.getChat = (userId,result)=>{
-    query = `SELECT * FROM chats WHERE '${userId}' = ANY(members) AND success = false;`;
+Chat.getChat = (userId,role,result)=>{
+    let query = `SELECT * FROM chats WHERE '${userId}' = ANY(members) AND success = false;`;
+
+    if(role==='admin'){
+        query = `SELECT * FROM chats WHERE (productId = 0 OR '${userId}' = ANY(members)) AND success = false;`
+    }
 
     sql.query(query, (err, res)=>{
         if(err) {
