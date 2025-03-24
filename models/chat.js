@@ -74,4 +74,32 @@ Chat.count = (userId,result) => {
     });
 };
 
+exports.createAdminChat = async (userId, result) => {
+    try {
+        const buyerId = userId;
+
+        const query = `
+        INSERT INTO chats (members, productId, quantity, success)
+        VALUES ($1, $2, $3, $4) RETURNING *;
+        `;
+
+        const value = [`{${String(buyerId)}}`, '0', '0' , false];
+
+        sql.query(query, value, (err, res)=>{
+            if(err) {
+                console.log('create chat error: ',err);
+                result(err,null);
+                return;
+            }
+            console.log('create chat:')
+            console.log(res.rows);
+            result(null, res.rows);
+        });
+
+    } catch (err) {
+        console.error("Error:", err);
+        result(err,null)
+    }
+};
+
 module.exports = Chat;

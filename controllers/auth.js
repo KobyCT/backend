@@ -80,7 +80,7 @@ exports.getCallback = async (req, res) => {
     }
 
     //Query user with userId
-    await User.findById(userId,(err,data)=>{
+    await User.findById(userId,async (err,data)=>{
         if(err) {
             if(err.kind === 'not_found') {
                 const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
@@ -99,6 +99,19 @@ exports.getCallback = async (req, res) => {
                     color: color,
                     role: 'acceptuser'
                 });
+                
+                try{
+                        const adminChat = await new Promise((resolve, reject) => {
+                                Chat.createAdminChat(userData.data.userId, (err, data) => {
+                                    if (err) return reject(err);
+                                resolve(data);
+                            });
+                        });
+                        console.log(adminChat);
+                }catch(err){
+                    res.status(400).json({success:false,message:"Error While create Admin chat : " ,err})
+                }
+
                 
                 User.create(user, (err, data)=>{
                     if(err)
