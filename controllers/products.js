@@ -211,7 +211,14 @@ exports.getProduct = async (req,res, next)=>{
 
 
 exports.getUnApproveProducts = async (req, res, next) => {
-    const query = `SELECT * FROM products WHERE isApprove = false ORDER BY id ASC`;
+    let isApprove = `isApprove = false `;
+
+    if(req.query.a){
+        isApprove = ` isApprove = ${req.query.a} `;
+    }
+    console.log(isApprove);
+
+    const query = `SELECT * FROM products WHERE ${isApprove} ORDER BY id ASC`;
     
     Product.query(query,async (err, data) => {
         if (err) {
@@ -270,6 +277,7 @@ exports.getUnApproveProducts = async (req, res, next) => {
         }
     });
 };
+
 
 exports.approveProducts = async (req, res, next) => {
     const productId = req.params.id;
