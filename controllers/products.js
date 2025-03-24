@@ -523,7 +523,7 @@ exports.createProduct = async (req, res, next) => {
             quantity: parseInt(req.body.quantity, 10) || 0,
             shippingType: req.body.shippingType?.trim() || '',
             shippingCost: parseFloat(req.body.shippingCost) || 0,
-            isApprove: false,
+            isApprove: true,
             isOpen: open,
             verifyImages: verifyImageNames, 
             productImages: productImageNames, 
