@@ -594,8 +594,6 @@ exports.deleteProduct = async (req,res) => {
             });
         });
     
-        await new Promise(async (reject) => {
-            try{
                 for (let product of deleteProduct) {
                     for (let image of product.verifyimages) {
                         await deleteFile(image);
@@ -606,11 +604,6 @@ exports.deleteProduct = async (req,res) => {
                     }
                 }
     
-            }catch(error){
-                reject(error)
-            }
-        
-        });
     
         Product.remove(req.params.id, async (err,data)=>{
             if(err) {
