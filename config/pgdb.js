@@ -263,4 +263,92 @@ async function createIndex() {
 
 createIndex();
 
+async function createTrigger() {
+    try {
+        const query = `
+    CREATE TABLE IF NOT EXISTS deleted_products_log (
+        id SERIAL PRIMARY KEY,
+        product_id INT,
+        sellerId VARCHAR(255),
+        name VARCHAR(255),
+        deleted_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE OR REPLACE FUNCTION log_deleted_product()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO deleted_products_log (product_id, sellerId, name, deleted_at)
+        VALUES (OLD.id, OLD.sellerId, OLD.name, NOW());
+
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE OR REPLACE TRIGGER before_delete_product
+    BEFORE DELETE ON products
+    FOR EACH ROW
+    EXECUTE FUNCTION log_deleted_product();
+
+    CREATE TABLE IF NOT EXISTS deleted_chats_log (
+        id SERIAL PRIMARY KEY,
+        chatId INT,
+        members TEXT[],
+        productId INTEGER,
+        quantity NUMERIC,
+        success BOOLEAN,
+        deleted_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE OR REPLACE FUNCTION log_deleted_chat()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO deleted_chats_log (chatId, members, productId, quantity, success, deleted_at)
+        VALUES (OLD.chatId, OLD.members, OLD.productId, OLD.quantity, OLD.success, NOW());
+
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE OR REPLACE TRIGGER before_delete_chat
+    BEFORE DELETE ON chats
+    FOR EACH ROW
+    EXECUTE FUNCTION log_deleted_chat();
+
+    CREATE TABLE IF NOT EXISTS deleted_messages_log (
+        id SERIAL PRIMARY KEY,
+        messageId INT,
+        chatId INT,
+        senderId VARCHAR(255),
+        text VARCHAR(255),
+        deleted_at TIMESTAMP DEFAULT NOW()
+    );
+
+    CREATE OR REPLACE FUNCTION log_deleted_message()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO deleted_messages_log (messageId, chatId, senderId, text, deleted_at)
+        VALUES (OLD.messageId, OLD.chatId, OLD.senderId, OLD.text, NOW());
+
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE OR REPLACE TRIGGER before_delete_message
+    BEFORE DELETE ON messages
+    FOR EACH ROW
+    EXECUTE FUNCTION log_deleted_message();
+
+
+        `; 
+
+        await connection.query(query);
+        console.log('Trigger created');
+    } catch (err) {
+        console.error(err);
+        console.error('Trigger creation failed');
+    }  
+}
+
+createTrigger();
+
 module.exports = connection;
