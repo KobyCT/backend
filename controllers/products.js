@@ -576,42 +576,57 @@ exports.updateProduct = (req, res) => {
 };
 
 exports.deleteProduct = async (req,res) => {
-    const deleteQuery = `SELECT * FROM products WHERE id = ${req.params.id}`;
-    const deleteProduct = await new Promise((resolve, reject) => {
-        Product.query(deleteQuery,(err,user)=> {
-            if(err) reject(res.status(400).json({success:false,message:err}))
-            resolve(user)
-        });
-    });
-
-    for (let product of deleteProduct) {
-        for (let image of product.verifyimages) {
-            await deleteFile(image);
-        }
+    try{
         
-        for (let image of product.productimages) {
-            await deleteFile(image);
-        }
-    }
-
-    Product.remove(req.params.id, async (err,data)=>{
-        if(err) {
-            if(err.kind === 'not_found') {
-                res.status(404).send({
-                    message: `Not found Product with id ${req.params.id}.`,
-                });
+        const deleteQuery = `SELECT * FROM products WHERE id = ${req.params.id}`;
+        const deleteProduct = await new Promise((resolve, reject) => {
+            Product.query(deleteQuery,(err,user)=> {
+                if(err) reject(err)
+                resolve(user)
+            });
+        });
+    
+        await new Promise(async (reject) => {
+            try{
+                for (let product of deleteProduct) {
+                    for (let image of product.verifyimages) {
+                        await deleteFile(image);
+                    }
+                    
+                    for (let image of product.productimages) {
+                        await deleteFile(image);
+                    }
+                }
+    
+            }catch(error){
+                reject(error)
+            }
+        
+        });
+    
+        Product.remove(req.params.id, async (err,data)=>{
+            if(err) {
+                if(err.kind === 'not_found') {
+                    res.status(404).send({
+                        message: `Not found Product with id ${req.params.id}.`,
+                    });
+                } else {
+                    res.status(500).send({
+                        message: 'Could not delete Product with id' + req.params.id,
+                    });
+                }
             } else {
-                res.status(500).send({
-                    message: 'Could not delete Product with id' + req.params.id,
+                res.status(200).json({
+                    success: true,
+                    data: data
                 });
             }
-        } else {
-            res.status(200).json({
-                success: true,
-                data: data
-            });
-        }
-    });
+        });
+    }catch(err){
+        res.status(400).send({
+            message: err,
+        });
+    }
 };
 
 exports.getProductCount = async (req, res) => {
