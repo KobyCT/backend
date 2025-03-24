@@ -187,7 +187,7 @@ Product.remove = (id,result) => {
     const query = `
     DELETE FROM tags WHERE productid = ${id};
     DELETE FROM cart WHERE productid = ${id};
-    DELETE FROM products WHERE id = ${id} RETURNING *;`;
+    DELETE FROM products WHERE id = ${id} CASCADE RETURNING *;`;
 
     sql.query(query, (err, res)=>{
         if(err){
