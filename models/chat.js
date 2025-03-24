@@ -27,6 +27,21 @@ Chat.getChat = (userId,role,result)=>{
     });
 };
 
+Chat.getChatByProductId = (productId,result)=>{
+    let query = `SELECT * FROM chats WHERE productId = ${productId};`;
+
+    sql.query(query, (err, res)=>{
+        if(err) {
+            console.log('get chat error: ',err);
+            result(err,null);
+            return;
+        }
+        console.log('get chat:')
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
 Chat.createChat = (newChat,result) =>{
     const {members,productId,quantity,success} = newChat;
 
@@ -36,6 +51,25 @@ Chat.createChat = (newChat,result) =>{
 `;
 
     sql.query(query, [members, productId, quantity , success], (err, res)=>{
+        if(err) {
+            console.log('create chat error: ',err);
+            result(err,null);
+            return;
+        }
+        console.log('create chat:')
+        console.log(res.rows);
+        result(null, res.rows);
+    });
+};
+
+Chat.removeChat = (chatId,result) =>{
+
+    const query = `
+    DELETE FROM messages WHERE chatId = ${chatId};
+  DELETE FROM chats WHERE chatId = ${chatId};
+`;
+
+    sql.query(query, (err, res)=>{
         if(err) {
             console.log('create chat error: ',err);
             result(err,null);

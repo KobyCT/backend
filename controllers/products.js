@@ -1,6 +1,7 @@
 const { query } = require('../models/history.js');
 const {Product,Tag} = require('../models/product');
 const User = require('../models/user.js');
+const Chat = require('../models/chat.js');
 const { uploadFile , deleteFile , getObjectSignedUrl}= require('./s3.js');
 const crypto = require('crypto');
 const sharp = require('sharp');
@@ -586,13 +587,28 @@ exports.updateProduct = (req, res) => {
 exports.deleteProduct = async (req,res) => {
     try{
         
-        const deleteQuery = `SELECT * FROM products WHERE id = ${req.params.id}`;
+        const deleteQuery = `SELECT * FROM products WHERE id = ${req.params.id};`;
         const deleteProduct = await new Promise((resolve, reject) => {
             Product.query(deleteQuery,(err,user)=> {
                 if(err) reject(err)
                 resolve(user)
             });
         });
+
+        const deleteChat = await new Promise((resolve, reject) => {
+            Chat.getChatByProductId(req.params.id,(err,chat)=>{
+                if(err) reject(err)
+                    resolve(chat)
+            })
+        });
+
+        for (let chat of deleteChat) {
+                await Chat.removeChat(chat.chatid,(err,chatRe)=>{
+                    if(err){
+                        return res.status(400).json({success:false,err:err});
+                    }
+                });
+        }
     
                 for (let product of deleteProduct) {
                     for (let image of product.verifyimages) {
